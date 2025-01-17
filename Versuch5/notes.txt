@@ -1,0 +1,56 @@
+- RNG:
+	needs a value from between 0 and 120x
+	clk is fast (50MHz) 
+	if we use a counter from the clock and device the lowest bits we get a cycle interval of 2us when the user presses a button, so we can use this as real random value seed.
+	if we need multiple values we can use some kind of permutation 
+	=DONE
+
+- BCD Saturation counter
+	=DONE
+- Init ROM 
+	= Copy from V4
+	- Update CHAR RAM
+
+TODO:
+	update start addresses in lcd_logic
+
+	
+	
+	
+	
+- Position RAM (7bit)
+	special values:
+		- diamond: 0x8e
+		- empty: 0x8f
+		- head: 0x8d
+	contains the address of the next segment
+	- Tail register
+	- Head register
+- RAM with memory mapped registers
+- I2C Writer
+- LCD Writer
+- LCD Logic
+- Mode selector 
+- Speed selector
+- Frequency divider
+- Game Logic
+	-Head register
+	-Tail register
+	-length register
+	For each tick:
+		- calculate position of next segment (based on mode selector and head register)
+		- read next segment ram (to check if its already used / if its a diamond)
+		- if already used or is wall
+			- disable GameLogic and trigger GameOver screen
+		- if not used:
+			- write next segment to ram
+			- update cell containing the head
+			- update head register
+		- if not a diamond or max length exceeded
+			- read tail segment
+			- clear tail segment
+			- update tail register
+		- inform LCD Logic to update display
+- Game over screen
+		
+	
