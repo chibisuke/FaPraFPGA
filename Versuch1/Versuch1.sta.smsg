@@ -1,0 +1,4 @@
+Warning (20028): Parallel compilation is not licensed and has been disabled
+Warning (332174): Ignored filter at Versuch1.sdc(26): clk could not be matched with a port
+Warning (332049): Ignored create_clock at Versuch1.sdc(26): Argument <targets> is an empty collection
+Warning (332068): No clocks defined in design.

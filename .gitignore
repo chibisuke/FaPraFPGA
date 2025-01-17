@@ -1,0 +1,11 @@
+db
+incremental_db
+*.rpt
+*.summary
+*.bak
+*.pin
+*.pof
+*.sof
+*.done
+.git
+.pp1q.rdb

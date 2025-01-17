@@ -1,0 +1,5 @@
+{ "" "" "" "No clocks defined in design." {  } {  } 0 332068 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Ignored create_clock at Versuch1.sdc(26): Argument <targets> is an empty collection" {  } {  } 0 332049 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "Ignored filter at Versuch1.sdc(26): clk could not be matched with a port" {  } {  } 0 332174 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "*" {  } {  } 0 20028 "" 0 0 "Quartus II" 0 -1 0 ""}
+{ "" "" "" "*" {  } {  } 0 292013 "" 0 0 "Quartus II" 0 -1 0 ""}
