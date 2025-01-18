@@ -17,7 +17,7 @@ entity fifo is
 		data_in: in std_logic_vector(DATA_WIDTH-1 downto 0);
 		push: in std_logic;
 		
-		n_reset: in std_logic
+		reset: in std_logic
 	);
 end fifo;
 
@@ -30,8 +30,8 @@ architecture arch of fifo is
 	signal head_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 	signal tail_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 begin
-	process(clk, n_reset) begin
-		if(n_reset = '0') then
+	process(clk, reset) begin
+		if(reset = '1') then
 			head_ptr <= (others=>'0');
 		elsif(rising_edge(clk)) then
 			head_ptr <= head_ptr_next;
@@ -44,8 +44,8 @@ begin
 		end if;
 	end process;
 	
-	process(clk, n_reset) begin
-		if(n_reset = '0') then
+	process(clk, reset) begin
+		if(reset = '1') then
 			tail_ptr <= (others=>'0');
 		elsif(rising_edge(clk)) then
 			tail_ptr <= tail_ptr_next;

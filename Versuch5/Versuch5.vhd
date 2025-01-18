@@ -15,6 +15,8 @@ entity Versuch5 is
 		hex0: out std_logic_vector(6 downto 0);
 		hex1: out std_logic_vector(6 downto 0);
 		key: in std_logic_vector(3 downto 0);
+		-- sw9 = sw(3) - otherwise we would need to do something with sw8-4
+		sw: in std_logic_vector(3 downto 0);
 		
 		lcd_sda: inout std_logic;
 		lcd_scl: inout std_logic;
@@ -22,27 +24,30 @@ entity Versuch5 is
 	);
 end Versuch5;
 
-architecture arch of Versuch5 is
-	signal key1_trigger: std_logic := '0';
-	signal key2_trigger: std_logic := '0';
-	signal key3_trigger: std_logic := '0';
-	signal key4_trigger: std_logic := '0';
-	
-	signal diamond: std_logic_vector(6 downto 0) := "0000000";
+architecture arch of Versuch5 is	
+	signal diamond: std_logic_vector(6 downto 0);
 	signal game_board: work.types.tGameBoard;
+	signal trigger_update: std_logic;
+	signal trigger_game_over: std_logic;
 	
 	signal score: std_logic_vector(7 downto 0);
+	
+	signal dir: work.types.direction;
+	signal rst: std_logic;
+	signal hold: std_logic;
+	signal speed: std_logic_vector(2 downto 0);
 begin
-	game: entity work.game(arch) port map(board=>game_board, n_rst=>'1', clk=>clk);
-	lcd: entity work.lcd(arch) port map(clk=>clk, reset=>key1_trigger, sda=>lcd_sda, scl=>lcd_scl, lcd_reset=>lcd_reset, update_map=>key2_trigger, game_over=>key3_trigger,
+	game: entity work.game(arch) port map(board=>game_board, rst=>rst, clk=>clk, score=>score, diamond=>diamond,
+		trigger_update=>trigger_update, trigger_game_over=>trigger_game_over,
+		dir=>dir, hold=>sw(3), speed=>sw(2 downto 0)
+	);
+	lcd: entity work.lcd(arch) port map(clk=>clk, reset=>'0', sda=>lcd_sda, scl=>lcd_scl, lcd_reset=>lcd_reset, update_map=>trigger_update, game_over=>trigger_game_over,
 		game_board=>game_board, diamond=>diamond, score=>score
 	);
+	
+	input: entity work.input(arch) port map(clk=>clk, key=>key, sw=>sw, dir=>dir, rst=>rst);
 
-	key1ed: entity work.edge_detect port map(clk=>clk, input=>key(0), edge=>key1_trigger);
-	key2ed: entity work.edge_detect port map(clk=>clk, input=>key(1), edge=>key2_trigger);
-	key3ed: entity work.edge_detect port map(clk=>clk, input=>key(2), edge=>key3_trigger);
-	key4ed: entity work.edge_detect port map(clk=>clk, input=>key(3), edge=>key4_trigger);
-	--rng: entity work.rng(arch) port map(clk=>clk,permutate=>key1_trigger, q=>q(6 downto 0));
+	
 	h0: entity work.seven_segment(arch) port map(in4=>score(3 downto 0), hex=>hex0);
 	h1: entity work.seven_segment(arch) port map(in4=>score(7 downto 4), hex=>hex1);
 end arch;

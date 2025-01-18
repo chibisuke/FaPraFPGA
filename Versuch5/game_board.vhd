@@ -12,7 +12,7 @@ entity game_board is
 		setTo: in std_logic;
 		wr: in std_logic;
 		
-		n_rst: in std_logic
+		rst: in std_logic
 	);
 end game_board;
 
@@ -32,8 +32,8 @@ architecture arch of game_board is
 begin
 	board <= board_data;
 	
-	process (clk, n_rst) begin
-		if(n_rst = '0') then
+	process (clk, rst) begin
+		if(rst = '1') then
 			board_data <= init_state;
 		elsif(rising_edge(clk)) then
 			if(wr = '1') then

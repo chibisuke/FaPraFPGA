@@ -8,7 +8,7 @@ entity bcd_sat_counter is
 	port(
 		clk: in std_logic;
 		inc: in std_logic;
-		n_rst: in std_logic;
+		rst: in std_logic;
 		
 		q: out std_logic_vector(7 downto 0)
 		
@@ -23,8 +23,8 @@ begin
 	count_next(7 downto 4) <= count(7 downto 4) + 1 when count(3 downto 0) = x"9" else count(7 downto 4);
 	
 	
-	process (clk, n_rst) begin
-		if(n_rst = '0') then
+	process (clk, rst) begin
+		if(rst = '1') then
 			count <= x"00";
 		elsif (rising_edge(clk)) then
 			if(inc = '1' and count /= x"99") then
