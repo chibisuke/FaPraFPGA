@@ -17,7 +17,9 @@ entity fifo is
 		data_in: in std_logic_vector(DATA_WIDTH-1 downto 0);
 		push: in std_logic;
 		
-		reset: in std_logic
+		reset: in std_logic;
+		
+		debug: out std_logic_vector(7 downto 0)
 	);
 end fifo;
 
@@ -30,9 +32,13 @@ architecture arch of fifo is
 	signal head_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 	signal tail_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 begin
+	debug <= "00" & std_logic_vector(head_ptr);
+
+
 	process(clk, reset) begin
 		if(reset = '1') then
-			head_ptr <= (others=>'0');
+			head_ptr <= (others=>'1');
+			tail_ptr <= (others=>'0');
 		elsif(rising_edge(clk)) then
 			head_ptr <= head_ptr_next;
 			if(push = '1') then
@@ -41,20 +47,17 @@ begin
 			else 
 				head_reg <= ram(to_integer(head_ptr_next));
 			end if;
-		end if;
-	end process;
-	
-	process(clk, reset) begin
-		if(reset = '1') then
-			tail_ptr <= (others=>'0');
-		elsif(rising_edge(clk)) then
 			tail_ptr <= tail_ptr_next;
-			tail_reg <= ram(to_integer(unsigned(tail_ptr_next)));
-		end if;	
+			if(push = '1' and head_ptr_next = tail_ptr_next) then
+				tail_reg <= data_in;
+			else
+				tail_reg <= ram(to_integer(unsigned(tail_ptr_next)));
+			end if;
+		end if;
 	end process;
 	
 	data_head <= head_reg;
    data_tail <= tail_reg;
-	head_ptr_next <= head_ptr when shift = '0' else head_ptr + 1;
-	tail_ptr_next <= tail_ptr when push = '0' else tail_ptr + 1;
+	head_ptr_next <= head_ptr when push = '0' else head_ptr + 1;
+	tail_ptr_next <= tail_ptr when shift = '0' else tail_ptr + 1;
 end arch;

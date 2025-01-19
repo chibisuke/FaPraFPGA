@@ -24,7 +24,7 @@ begin
 	key1tr: entity work.edge_detect(arch) port map(clk=>clk, input=>key(1), edge=>key_trigger(1));
 	key2tr: entity work.edge_detect(arch) port map(clk=>clk, input=>key(2), edge=>key_trigger(2));
 	key3tr: entity work.edge_detect(arch) port map(clk=>clk, input=>key(3), edge=>key_trigger(3));
-	sw9tr: entity work.edge_detect(arch) port map(clk=>clk, input=>sw(3), edge=>reset);
+	sw9tr: entity work.edge_detect(arch) port map(clk=>clk, input=>not sw(3), edge=>reset);
 	
 	rst <= reset;
 end arch;

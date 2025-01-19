@@ -1,56 +1,93 @@
 - RNG:
-	needs a value from between 0 and 120x
-	clk is fast (50MHz) 
-	if we use a counter from the clock and device the lowest bits we get a cycle interval of 2us when the user presses a button, so we can use this as real random value seed.
-	if we need multiple values we can use some kind of permutation 
+	needs a value from between 0 and 107
+	depending on an entropy source, add 3 or 1 to the current value for each clock cycle. 
 	=DONE
+	
+- ENTROPY:
+	use a PLL (Altera MegaFunction) to create two clocks with 50MHz each.
+	One with double base frequency, but a divider after it.
+	This should be enougth to cause some jittering between the two clocks which we can use as an entropy source
+	=> To prevent problems with the timing anylsis we need to also disable timing analysis on the nets processing
+	the entropy data.
+	= DONE
 
 - BCD Saturation counter
 	=DONE
+	
 - Init ROM 
-	= Copy from V4
-	- Update CHAR RAM
+	contains init data
+	contains the game over screen	
+	= DONE
 
-TODO:
-	update start addresses in lcd_logic
+- lcd score logic
+	we take some special commands from the LCD Rom and process them to add the score to the gameover screen
+	x"600" => x"43" & score(7 downto 4)
+	x"601" => x"43" & score(3 downto 0)
+	
+- LCD Core logic
+	copy from Versuch4, most of it can be reused
+	update logic with DO_UPDATE_MAP, DO_GAME_OVER
+	remove reset function (Not needed)
+	update mem_mux to switch between playfield logic and init rom
+	
+- LCD Playfield logic
+	gets the diamond position and the playfield and created the LCD Commands mapped to memory addresses
+	
+- input/Input logic
+	aggredate edge detection circutits and process directional commands
+	
+- interval timer
+	Timer component that creates cyclic signals depending on a scaler (sw(2 downto 0)
+	
+- seven segment display -> from versuch1
 
+- Game board
+	contains a bitfield of 20x8 = 160 bits to hold the data of the playfield
+	if a bit is set, means the field is occupied. Note: The diamond is NOT part of the playfield
+	but held in a seperate register
 	
+- Fifo
+	A Fifo will be used to hold the snake
+	We're going to use an M4K true-dual port RAM Module. The two address registers will be held 
+	inside the fifo component, one will always point to the head of the snake, the other to the tail.
+	The fifo will contain a ordered list of field the snake is on. Each field is the bit address inside the
+	gamefield. 
+	a fifo will always return the bit numbers of the head and the tail of the snake.
+	a shift command (std_logic signal) will cut one field from the tail and advance the tail pointer
+	a push command will add a new entry for the head. 
 	
-	
-	
-- Position RAM (7bit)
-	special values:
-		- diamond: 0x8e
-		- empty: 0x8f
-		- head: 0x8d
-	contains the address of the next segment
-	- Tail register
-	- Head register
-- RAM with memory mapped registers
-- I2C Writer
-- LCD Writer
-- LCD Logic
-- Mode selector 
-- Speed selector
-- Frequency divider
+
 - Game Logic
-	-Head register
-	-Tail register
-	-length register
-	For each tick:
-		- calculate position of next segment (based on mode selector and head register)
-		- read next segment ram (to check if its already used / if its a diamond)
-		- if already used or is wall
-			- disable GameLogic and trigger GameOver screen
-		- if not used:
-			- write next segment to ram
-			- update cell containing the head
-			- update head register
-		- if not a diamond or max length exceeded
-			- read tail segment
-			- clear tail segment
-			- update tail register
-		- inform LCD Logic to update display
-- Game over screen
+	- this is where everything comes together. State Engine: (why doesn't VHDL support hirachical state engines?)
+	- if hold suppress tick
+	Reset: 
+		reset score counter
+		reset playfield
+		reset fifo
+	Reset2: 
+		write initial values to fifo
+	GetDiamond:
+	ValidateDiamond:
+		if invalid => GetDiamond
+		update_LCD
+	WaitForTick:
+	Tick
+		calculate next field
+		check if used => GameOver
+		push next field to fifo
+		update playfield
+		check if diamond => GetDiamond
+		else => remove tail
+	RemoveTail
+		update playfield
+		fifo.shift()
+		updateLCD()
+		
+		
+- Open Tasks
+			- Dont allow direct reversal
+			- start on load if sp9 is high
+			- Sometime we don't have a diamond
+	
 		
 	
