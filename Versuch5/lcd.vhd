@@ -31,7 +31,9 @@ entity lcd is
 		game_over: in std_logic;
 		score: in std_logic_vector(7 downto 0); -- BCD
 		diamond: in std_logic_vector(6 downto 0);
-		game_board: in work.types.tGameBoard
+		game_board: in work.types.tGameBoard;
+		
+		lcd_init_done: out std_logic
     );
 end entity lcd;
 
@@ -76,7 +78,7 @@ begin
 	logic: entity work.lcd_logic(arch) port map(clk=>clk, lcd_reset=>lcd_reset,
 		t_start=>t_start, t_fire=>t_fire,
 		start_write=>start_write, write_done=>write_done, write_start_addr=>write_start_addr,
-		trigger_reset=>reset, trigger_update_map=>update_map, trigger_gameover=>game_over
+		trigger_reset=>reset, trigger_update_map=>update_map, trigger_gameover=>game_over,lcd_init_done=>lcd_init_done
 	);
 	
 	-- LCD I2C Write Logic

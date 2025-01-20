@@ -10,7 +10,9 @@ entity input is
 		sw: in std_logic_vector(3 downto 0);
 		
 		dir: out work.types.direction;
-		rst: out std_logic
+		rst: out std_logic;
+		
+		trigger_update: in std_logic
 	);
 end input;
 
@@ -18,7 +20,7 @@ architecture arch of input is
 	signal key_trigger: std_logic_vector(3 downto 0);
 	signal reset: std_logic;
 begin
-	logic: entity work.input_logic(arch) port map(clk=>clk, sw=>sw, dir=>dir, rst=>reset, key_trigger=>key_trigger);
+	logic: entity work.input_logic(arch) port map(clk=>clk, sw=>sw, dir=>dir, rst=>reset, key_trigger=>key_trigger, trigger_update=>trigger_update);
 	
 	key0tr: entity work.edge_detect(arch) port map(clk=>clk, input=>key(0), edge=>key_trigger(0));
 	key1tr: entity work.edge_detect(arch) port map(clk=>clk, input=>key(1), edge=>key_trigger(1));

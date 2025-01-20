@@ -12,7 +12,12 @@ entity game_calc is
 		diamond_field_state: out std_logic;
 		next_field: out std_logic_vector(7 downto 0);
 		next_field_state: out std_logic;
-		next_is_diamond: out std_logic
+		next_is_diamond: out std_logic;
+		
+		rst: out std_logic;
+		rstsig: in std_logic;
+		lcd_init_done: in std_logic;
+		nhold: in std_logic
 		
 	);
 end game_calc;
@@ -24,7 +29,8 @@ architecture arch of game_calc is
 	
 	signal diamond_offset: unsigned(7 downto 0);
 begin
-	-- TODO
+	rst <= rstsig or (lcd_init_done and nhold);
+
 	diamond_field_value <= unsigned('0' & rng_value) + diamond_offset;
 	
 	process (rng_value) begin

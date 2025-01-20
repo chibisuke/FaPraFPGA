@@ -39,7 +39,9 @@ entity lcd_logic is
 		
 		trigger_update_map: in std_logic;
 		trigger_gameover: in std_logic;
-		trigger_reset: in std_logic
+		trigger_reset: in std_logic;
+		
+		lcd_init_done: out std_logic
     );
 end entity lcd_logic;
 
@@ -67,6 +69,8 @@ architecture arch of lcd_logic is
 	 signal update_map, update_map_next: std_logic;
 	 signal game_over, game_over_next: std_logic;
 	 signal do_reset, do_reset_next: std_logic;
+	 
+	 signal lcd_init_done_next: std_logic;
 
 begin
 	
@@ -80,6 +84,7 @@ begin
 			update_map <= update_map_next;
 			game_over <= game_over_next;
 			do_reset <= do_reset_next;
+			lcd_init_done <= lcd_init_done_next;
 		end if;
 	end process;
 	
@@ -96,6 +101,7 @@ begin
 		lcd_reset_next <= '1';
 		start_write_next <= '0';
 		write_start_addr_next <= (others=>'0');
+		lcd_init_done_next <= '0';
 
 		case state is
 			-- start timer 1
@@ -130,6 +136,7 @@ begin
 				start_write_next <= '1';
 				write_start_addr_next <= x"00";
 				if(write_done = '1') then
+					lcd_init_done_next <= '1';
 					next_state <= WAIT_MAIN;
 				end if;
 			-- Now init is done and we wait for any update triggers

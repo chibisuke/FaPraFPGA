@@ -19,7 +19,7 @@ entity fifo is
 		
 		reset: in std_logic;
 		
-		debug: out std_logic_vector(7 downto 0)
+		count: out std_logic_vector(ADDR_WIDTH-1 downto 0)
 	);
 end fifo;
 
@@ -32,8 +32,7 @@ architecture arch of fifo is
 	signal head_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 	signal tail_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
 begin
-	debug <= "00" & std_logic_vector(head_ptr);
-
+	count <= std_logic_vector(unsigned(head_ptr) - unsigned(tail_ptr) + 1);
 
 	process(clk, reset) begin
 		if(reset = '1') then

@@ -16,7 +16,8 @@ entity game is
 		dir: in work.types.direction;
 		nhold: in std_logic;
 		
-		rst: in std_logic
+		rstsig: in std_logic;
+		lcd_init_done: in std_logic
 	);
 end game;
 
@@ -48,11 +49,15 @@ architecture arch of game is
 	signal next_is_diamond: std_logic;
 	signal diamond_field_state: std_logic;
 	
+	signal snake_length: std_logic_vector(5 downto 0);
+	
+	signal rst: std_logic;
+	
 begin
 	board <= gboard;
 	gameboard: entity work.game_board(arch) port map(board=>gboard, rst=>rst, wr=>board_wr, setTo=>board_wr_value, field=>board_wr_addr, clk=>clk);
 	fifo: entity work.fifo(arch) port map(clk=>clk,reset=>rst, data_head=>addr_head, data_tail=>addr_tail, shift=>fifo_shift, data_in=>fifo_in, push=>fifo_push,
-			debug=>open
+		count=>snake_length
 	);
 	escore: entity work.bcd_sat_counter(arch) port map(clk=>clk, rst=>rst, q=>gscore, inc=>score_inc);
 
@@ -60,7 +65,7 @@ begin
 	
 	calc: entity work.game_calc(arch) port map(dir=>dir, addr_head=>addr_head, rng_value=>rng_value, board=>gboard,
 		diamond_field_state=>diamond_field_state, next_field=>next_field, next_field_state=>next_field_state,
-		next_is_diamond=>next_is_diamond
+		next_is_diamond=>next_is_diamond, rst=>rst, nhold=>nhold, lcd_init_done=>lcd_init_done, rstsig=>rstsig
 	);
 	logic: entity work.game_logic(arch) port map(clk=>clk,
 		dir=>dir, tick=>tick, rst=>rst,
@@ -73,13 +78,11 @@ begin
 		next_field_state=>next_field_state,
 		diamond_field_state=>diamond_field_state,
 		next_is_diamond=>next_is_diamond,
-		
-		debug=>open
+		snake_length=>snake_length
 	);
 	
 	diamond <= rng_value;
 	score <= gscore;
-	--score <= '0' & rng_value;
 	
 	rng: entity work.rng(arch) port map(clk=>clk, permutate=>permutate_rng, q=>rng_value, random_bit=>random_bit);
 	pll: entity work.pll(syn) port map(areset=>'0', inclk0=>clk, c0=>c0, c1=>c1, locked=>open);

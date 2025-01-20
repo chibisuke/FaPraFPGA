@@ -28,11 +28,10 @@ entity game_logic is
 		fifo_in: out std_logic_vector(7 downto 0); --used
 		fifo_shift: out std_logic; --used
 		fifo_push: out std_logic; --used
+		snake_length: in std_logic_vector(5 downto 0);
 		
 		--rng:
-		permutate_rng: out std_logic; --used
-		
-		debug: out std_logic_vector(7 downto 0)
+		permutate_rng: out std_logic --used
 	);
 end game_logic;
 
@@ -53,6 +52,7 @@ architecture arch of game_logic is
 	signal board_wr_next: std_logic;
 	signal board_wr_value_next: std_logic;
 	signal board_wr_addr_next: std_logic_vector(7 downto 0);
+	signal new_diamond, new_diamond_next: std_logic;
 begin
 	
 	process(clk, rst) begin
@@ -70,10 +70,11 @@ begin
 			board_wr <= board_wr_next;
 			board_wr_addr <= board_wr_addr_next;
 			board_wr_value <= board_wr_value_next;
+			new_diamond <= new_diamond_next;
 		end if;
 	end process;
 	
-	process(state, state_next, next_is_diamond, diamond_field_state, next_field, tick, rst, addr_tail, next_field_state) begin
+	process(state, state_next, next_is_diamond, diamond_field_state, next_field, tick, rst, addr_tail, next_field_state, snake_length, new_diamond) begin
 			state_next <= state;
 			fifo_push_next <= '0';
 			fifo_in_next <= x"00";
@@ -85,6 +86,7 @@ begin
 			board_wr_next <= '0';
 			board_wr_value_next <= '0';
 			board_wr_addr_next <= x"00";
+			new_diamond_next <= '0';
 			case state is 
 				when INIT =>
 					if(rst = '1') then
@@ -129,24 +131,29 @@ begin
 						board_wr_next <= '1';
 						board_wr_addr_next <= next_field;
 						if(next_is_diamond = '1') then
-							state_next <= VALIDATE_DIAMOND;
+							if(unsigned(snake_length) > 32) then
+								state_next <= REMOVE_TAIL;
+								new_diamond_next <= '1';
+							else 
+								state_next <= VALIDATE_DIAMOND;
+							end if;
 							permutate_rng_next <= '1';
 							score_inc_next <= '1';
 						else
 							state_next <= REMOVE_TAIL;
-
 						end if;
 					end if;
 				WHEN REMOVE_TAIL=>
-						board_wr_value_next <= '0';
-						board_wr_next <= '1';
-						board_wr_addr_next <= addr_tail;
-						trigger_update_next <= '1';
-						fifo_shift_next <= '1';
-						state_next <= WAIT_FOR_TICK;
+					board_wr_value_next <= '0';
+					board_wr_next <= '1';
+					board_wr_addr_next <= addr_tail;
+					trigger_update_next <= '1';
+					fifo_shift_next <= '1';
+					state_next <= WAIT_FOR_TICK;
+					if(new_diamond = '1') then
+						state_next <= VALIDATE_DIAMOND;
+					end if;
 				when others=> -- GAME_OVER does nothing	
 			end case;
 	end process;
-	debug <= std_logic_vector(addr_tail);
-
 end arch;

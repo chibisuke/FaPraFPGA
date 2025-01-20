@@ -85,9 +85,7 @@
 		
 		
 - Open Tasks
-			- Dont allow direct reversal
-			- start on load if sp9 is high
-			- Sometime we don't have a diamond
+			- Sometimes the diamond check doesn't work - why?
 	
 		
 	
