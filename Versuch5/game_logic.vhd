@@ -9,7 +9,6 @@ entity game_logic is
 		rst: in std_logic; -- used
 		dir: in work.types.direction;
 		
-		board: in work.types.tGameBoard; --used
 		board_wr: out std_logic;
 		board_wr_value: out std_logic;
 		board_wr_addr: out std_logic_vector(7 downto 0);
@@ -18,17 +17,19 @@ entity game_logic is
 		trigger_game_over: out std_logic; -- used
 		score_inc: out std_logic; -- used
 		
-		diamond: out std_logic_vector(6 downto 0); -- used
+		diamond_field_state: in std_logic; -- used
+		next_field: in std_logic_vector(7 downto 0);
+		next_field_state: in std_logic;
+		next_is_diamond: in std_logic;
 		
 		-- fifo:
-		addr_head: in std_logic_vector(7 downto 0);
+		--addr_head: in std_logic_vector(7 downto 0);
 		addr_tail: in std_logic_vector(7 downto 0);
 		fifo_in: out std_logic_vector(7 downto 0); --used
 		fifo_shift: out std_logic; --used
 		fifo_push: out std_logic; --used
 		
 		--rng:
-		rng_value: in std_logic_vector(6 downto 0); --used
 		permutate_rng: out std_logic; --used
 		
 		debug: out std_logic_vector(7 downto 0)
@@ -52,12 +53,6 @@ architecture arch of game_logic is
 	signal board_wr_next: std_logic;
 	signal board_wr_value_next: std_logic;
 	signal board_wr_addr_next: std_logic_vector(7 downto 0);
-	
-	
-	signal diamond_field: unsigned(7 downto 0); --TODO
-	signal next_field: unsigned(7 downto 0);
-	
-	signal next_field_offset: unsigned(7 downto 0);
 begin
 	
 	process(clk, rst) begin
@@ -78,7 +73,7 @@ begin
 		end if;
 	end process;
 	
-	process(state, state_next, board, next_field, tick, diamond_field, rst, addr_tail) begin
+	process(state, state_next, next_is_diamond, diamond_field_state, next_field, tick, rst, addr_tail, next_field_state) begin
 			state_next <= state;
 			fifo_push_next <= '0';
 			fifo_in_next <= x"00";
@@ -111,10 +106,11 @@ begin
 					fifo_push_next <= '1';		
 					permutate_rng_next <= '1';
 				when VALIDATE_DIAMOND=>
-					if(board(to_integer(diamond_field)) = '0')  then
+					if(diamond_field_state = '0')  then
 						state_next <= WAIT_FOR_TICK;
 						trigger_update_next <= '1';
 					else
+						state_next <= VALIDATE_DIAMOND;
 						permutate_rng_next <= '1';
 					end if;
 				when WAIT_FOR_TICK=>
@@ -123,16 +119,16 @@ begin
 					end if;
 				when DO_TICK=>
 					state_next <= WAIT_FOR_TICK;
-					if(board(to_integer(next_field)) = '1') then
+					if(next_field_state = '1') then -- <--
 						state_next <= GAME_OVER;
 						trigger_game_over_next <= '1';
 					else
-						fifo_in_next <= std_logic_vector(next_field);
+						fifo_in_next <= next_field;
 						fifo_push_next <= '1';
 						board_wr_value_next <= '1';
 						board_wr_next <= '1';
-						board_wr_addr_next <= std_logic_vector(next_field);
-						if(next_field = diamond_field) then
+						board_wr_addr_next <= next_field;
+						if(next_is_diamond = '1') then
 							state_next <= VALIDATE_DIAMOND;
 							permutate_rng_next <= '1';
 							score_inc_next <= '1';
@@ -151,19 +147,6 @@ begin
 				when others=> -- GAME_OVER does nothing	
 			end case;
 	end process;
-	
-	diamond <= rng_value;
-	
-	-- TODO
-	diamond_field <= '0' & unsigned(rng_value);
-	
-	with dir select
-		next_field_offset <=
-			x"EC" when work.types.NORTH, -- -20
-			x"14" when work.types.SOUTH, -- + 20
-			x"FF" when work.types.WEST,  -- -1
-			x"01" when work.types.EAST;  -- +1
-	next_field <= unsigned(addr_head) + next_field_offset;
 	debug <= std_logic_vector(addr_tail);
 
 end arch;
