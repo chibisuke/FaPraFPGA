@@ -55,8 +55,12 @@
 	a fifo will always return the bit numbers of the head and the tail of the snake.
 	a shift command (std_logic signal) will cut one field from the tail and advance the tail pointer
 	a push command will add a new entry for the head. 
+	we also need the number of entries in the fifo to determine the max length of the snake
 	
-
+- Game Calc
+	Some of the (mostly combinatorial) calculations like the transform of rng to field number for the diamond
+	will reside here, to reduce the size of the game logic, and prevent Quartus RTL Viewer from running havoc. 
+	
 - Game Logic
 	- this is where everything comes together. State Engine: (why doesn't VHDL support hirachical state engines?)
 	- if hold suppress tick
@@ -83,9 +87,5 @@
 		fifo.shift()
 		updateLCD()
 		
-		
-- Open Tasks
-			- Sometimes the diamond check doesn't work - why?
-	
 		
 	

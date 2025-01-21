@@ -37,7 +37,7 @@ end game_logic;
 
 architecture arch of game_logic is
 	type GAME_STATE is ( 
-		INIT, RESET, RESET2, RESET3, VALIDATE_DIAMOND, WAIT_FOR_TICK, DO_TICK, REMOVE_TAIL, GAME_OVER
+		INIT, RESET, RESET2, RESET3, WAIT_DIAMOND, VALIDATE_DIAMOND, WAIT_FOR_TICK, DO_TICK, REMOVE_TAIL, GAME_OVER
 	);
 	
 	signal state, state_next: GAME_STATE := INIT;
@@ -103,16 +103,18 @@ begin
 					fifo_in_next <= x"45"; -- 69
 					fifo_push_next <= '1';
 				when RESET3=>
-					state_next <= VALIDATE_DIAMOND;
+					state_next <= WAIT_DIAMOND;
 					fifo_in_next <= x"46"; -- 70
 					fifo_push_next <= '1';		
 					permutate_rng_next <= '1';
+				when WAIT_DIAMOND =>
+					state_next <= VALIDATE_DIAMOND;
 				when VALIDATE_DIAMOND=>
 					if(diamond_field_state = '0')  then
 						state_next <= WAIT_FOR_TICK;
 						trigger_update_next <= '1';
 					else
-						state_next <= VALIDATE_DIAMOND;
+						state_next <= WAIT_DIAMOND;
 						permutate_rng_next <= '1';
 					end if;
 				when WAIT_FOR_TICK=>
@@ -135,7 +137,7 @@ begin
 								state_next <= REMOVE_TAIL;
 								new_diamond_next <= '1';
 							else 
-								state_next <= VALIDATE_DIAMOND;
+								state_next <= WAIT_DIAMOND;
 							end if;
 							permutate_rng_next <= '1';
 							score_inc_next <= '1';
