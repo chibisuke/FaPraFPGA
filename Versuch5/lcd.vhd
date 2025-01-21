@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- copy from Versuch4 - modified to account for the new data and trigger signals
+
+
 -- Main entity for the DOGM204-A Display
 -- ties all the string together that are required for the display to work
 -- 
@@ -11,12 +14,14 @@ use ieee.numeric_std.all;
 -- sda, scl: I2C signals to use
 -- lcd_reset: reset pin of the LCD. (active low!)
 -- 
--- trigger_temp_update: trigger signaling that a temperature read has been completed
--- temp_bcd: the BCD Value of the temperature
--- temp_dec: the first decimal place of the temp_bcd
+-- update_map: trigger signaling that map need to be redrawn
+-- game_over: triggers a switch to the game_over screen
+-- score: score to display on the game_over screen as a 2 digit BCD
+-- diamond: the diamonds position (value from 0 - 107)
+-- game_board: the game board to display on the map screen
 --
--- trigger_char_update: trigger signalling that a update of the selected char should be performed
--- char: the char to write to the display
+-- lcd_init_done: signals rest of the logic that the LCD has finished initializing
+--    and is ready to receive trigger commands
 --
 entity lcd is
     port (

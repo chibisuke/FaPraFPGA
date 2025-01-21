@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.MATH_REAL.all;
 
+-- copy from Versuch4 - unmodified
+
 -- a simple timer circuit
 -- 
 -- generic: 
@@ -12,7 +14,7 @@ use ieee.MATH_REAL.all;
 -- ports:
 --   clk: the clk to use
 --   start: trigger to start the clock. if set to '1' if the timer elapses, it repeats.
---   fire: 
+--   fire: zhe timer has fired
 entity timer is
 	generic (
 		-- using Generics here, so we can reuse the timer entity with different timeouts

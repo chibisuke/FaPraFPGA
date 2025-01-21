@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.MATH_REAL.all;
 
+-- Copy from versuch4 - unmodified
+
 -- LCD I2C Interface logic
 -- This state engine sequencially reads memory locations
 -- and writs it the LCD until it reaches a null word.

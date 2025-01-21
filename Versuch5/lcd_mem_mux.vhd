@@ -24,13 +24,10 @@ end entity lcd_mem_mux;
 architecture arch of lcd_mem_mux is
 begin
 	process (addr, init_rom_data, gameboard_cmd_data) begin
-		-- "0xxxxxxx" init_rom
+		-- 0xxxxxxx => ROM
 		if(addr(7) = '0') then
 			data <= init_rom_data;
-		-- "10xxxxxx" temp_reg
-		--elsif(addr(6) = '0') then
-		--	data <= temp_reg_data;
-		-- "11xxxxxx" char_reg
+		-- 1xxxxxxx => game_board logic
 		else
 			data <= gameboard_cmd_data;
 		end if;

@@ -2,8 +2,38 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- This contains some precalculations to slim down the game_logic
+-- and prevent the RTL Viewer from running havoc.
+--
+-- it calculates the field identifier of the diamond field, 
+-- fetches its state
+-- calculates the field the snake will move to
+-- and fetches its state
+-- and manages the global reset
+--
+-- clk: the clock to use
+-- dir: the direction the snake is moving to next
+-- addr_head: the address of the current snake head
+-- board: the full board data
+--
+-- diamond_field_state: the state of the field the diamond is it
+-- 	this is used to validate if the rng generated diamond field is
+--    occupied or if it is a valid field to place the diamond
+-- next_field: the location of the next field the snake head will be places at
+-- next_field_state: the state of the field the snake head will be placed
+-- 	this is used to check for game-over condition
+-- next_is_diamond: true if next_field contains the diamond
+--
+-- rst: global reset signal
+-- rstsig: reset input from the controls
+-- lcd_init_done: signal telling the logic that the init of the LCD is completed
+-- 	and the LCD can now accept writes
+-- nhold: input to check if the game is stopped by the player
+--
 entity game_calc is
 	port(
+		clk: std_logic;
+	
 		dir: in work.types.direction;
 		rng_value: in std_logic_vector(6 downto 0);
 		addr_head: in std_logic_vector(7 downto 0);
@@ -28,14 +58,24 @@ architecture arch of game_calc is
 	signal diamond_field_value: unsigned(7 downto 0);
 	
 	signal diamond_offset: unsigned(7 downto 0);
+	
+	signal next_field_next: std_logic_vector(7 downto 0);
+	signal next_field_state_next: std_logic;
 begin
+	-- reset when the either the user triggers a reset, or (if the game is not on hold) when the LCD initializes
 	rst <= rstsig or (lcd_init_done and nhold);
 
+	-- the address of the diamond field
 	diamond_field_value <= unsigned('0' & rng_value) + diamond_offset;
 	
+	-- Offset of the diamond field address relative to the rng_value
+	-- this is calculated seperately to save a lot of adder circuits.
+	-- The calculcated diamond_offset value is then used to calculcate diamond_field_value using a single adder
 	process (rng_value) begin
 		-- Note: remember display command addresses are offset by +1 for the
 		-- set position command. 
+		--
+		-- on a CPU Using an integer division would be helpfull, but we don't have that here
 		--
 		-- range(diamond) := 0 ... 107
 		-- line(1) := 0 - 17   => addr := 21 - 38
@@ -56,21 +96,16 @@ begin
 			end if;		
 		else -- line 4 - 6 
 			if(unsigned(rng_value) < x"48") then -- line 4
-				diamond_offset <= x"1B"; -- (-27)
+				diamond_offset <= x"1B"; -- (+27)
 			elsif(unsigned(rng_value) < x"5A") then -- line 5
-				diamond_offset <= x"1D"; -- (-29)
+				diamond_offset <= x"1D"; -- (+29)
 			else -- line 6
-				diamond_offset <= x"1F"; -- (-31)
+				diamond_offset <= x"1F"; -- (+31)
 			end if;	
 		end if;
 		
 	end process;
-	
-	
-	
-	
-	
-	
+		
 	diamond_field_state <= board(to_integer(diamond_field_value));
 	process(next_field_value, diamond_field_value) begin
 		if(next_field_value = diamond_field_value) then
@@ -87,6 +122,15 @@ begin
 			x"FF" when work.types.WEST,  -- -1
 			x"01" when work.types.EAST;  -- +1
 	next_field_value <= unsigned(addr_head) + next_field_offset;
-	next_field <= std_logic_vector(next_field_value);
-	next_field_state <= board(to_integer(next_field_value));
+	
+	-- break the critical path to increate Fmax by around 15MHz
+	-- without impacting the logic in any way
+	next_field_next <= std_logic_vector(next_field_value);
+	next_field_state_next <= board(to_integer(next_field_value));	
+	process(clk) begin
+		if(rising_edge(clk)) then
+			next_field <= next_field_next;
+			next_field_state <= next_field_state_next;
+		end if;
+	end process;
 end arch;

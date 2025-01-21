@@ -87,5 +87,9 @@
 		fifo.shift()
 		updateLCD()
 		
+- debounce
+	the switches sometimes are bouncing. Since we want to derive a proper reset signal from SW9 that is not causing the internal states to corrupt
+	we will need to debounce it. 
+		
 		
 	

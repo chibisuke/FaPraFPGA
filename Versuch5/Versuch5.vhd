@@ -34,14 +34,14 @@ architecture arch of Versuch5 is
 	
 	signal dir: work.types.direction;
 	signal rst: std_logic;
-	signal hold: std_logic;
+	signal sw9db: std_logic;
 	signal speed: std_logic_vector(2 downto 0);
 	
 	signal lcd_init_done: std_logic;
 begin
 	game: entity work.game(arch) port map(board=>game_board, rstsig=>rst, clk=>clk, score=>score, diamond=>diamond,
 		trigger_update=>trigger_update, trigger_game_over=>trigger_game_over,
-		dir=>dir, nhold=>sw(3), speed=>sw(2 downto 0),
+		dir=>dir, nhold=>sw9db, speed=>sw(2 downto 0),
 		lcd_init_done=>lcd_init_done
 	);
 	lcd: entity work.lcd(arch) port map(clk=>clk, reset=>'0', sda=>lcd_sda, scl=>lcd_scl, lcd_reset=>lcd_reset, update_map=>trigger_update, game_over=>trigger_game_over,
@@ -49,7 +49,7 @@ begin
 		lcd_init_done=>lcd_init_done
 	);
 	
-	input: entity work.input(arch) port map(clk=>clk, key=>key, sw=>sw, dir=>dir, rst=>rst, trigger_update=>trigger_update);
+	input: entity work.input(arch) port map(clk=>clk, key=>key, sw=>sw, dir=>dir, rst=>rst, trigger_update=>trigger_update, sw9dbo=>sw9db);
 
 	
 	h0: entity work.seven_segment(arch) port map(in4=>score(3 downto 0), hex=>hex0);

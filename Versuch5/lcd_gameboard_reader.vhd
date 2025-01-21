@@ -2,6 +2,16 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- Transforms the content of the gameboard to a set of
+-- LCD Command words required to update the LCD contents.
+-- This is mapped into LCD Command memory to transfer it using the lcd_i2c_writer entity
+-- 
+-- clk: the clock to use
+-- board: the board bitfield noting the status of each field
+-- diamond: the address of the diamond position, not including the border of the playfield
+-- addr: the address of the command to fetch
+-- q: the command word to send to the LCD.
+
 entity lcd_mem_gameboard_reader is
 	port(
 		clk: in std_logic;
@@ -29,6 +39,7 @@ architecture arch of lcd_mem_gameboard_reader is
 
 begin
 
+	-- Calculate the offset and line position of the diamond
 	process (diamond) begin
 		-- Note: remember display command addresses are offset by +1 for the
 		-- set position command. 
@@ -68,8 +79,10 @@ begin
 		
 	end process;
 	
+	-- calculate the command address that needs to take care of displaying the diamond
 	diamond_addr <= std_logic_vector(unsigned(diamond) + diamond_offset(6 downto 0));
 
+	-- Split the board into upper and lower lines. 
 	board_hi <= '0' & board(0 to 19) & board(40 to 59) & board(80 to 99) & board(120 to 139);
 	board_lo <= '0' & board(20 to 39) & board(60 to 79) & board(100 to 119) & board(140 to 159);
 	
@@ -79,6 +92,8 @@ begin
 		end if;
 	end process;
 	
+	-- calculate how the current character would look like if it was the diamond.
+	-- it is only used if the current address has the diamond
 	process (addr, board_lo, board_hi, diamond_lo) begin
 		if(diamond_lo = '0') then
 			q_dia <= board_lo(to_integer(unsigned(addr))) & '0';
@@ -88,13 +103,19 @@ begin
 	end process;
 	
 	process (addr, board_hi, board_lo, q_dia, diamond_addr) begin
+		-- address x0 is the lcd command for initiate RAM Writes
 		if(addr = "0000000") then
 			q_next <= x"080";
+		-- everything above x50 is zero padded. There is nothing there
 		elsif(unsigned(addr) > x"50") then
 			q_next <= x"000";
+		-- the current address is the diamond address, so we return the diamond
+		-- command byte calculated above
 		elsif(unsigned(addr) = unsigned(diamond_addr)) then
 			q_next <= x"40" & "01" & q_dia;
 		else
+			-- this is a normal board byte, so we aggregate the upper and lower half of the character
+			-- and create a command word from it. 
 			q_next <= x"40" & "00" & board_hi(to_integer(unsigned(addr))) & board_lo(to_integer(unsigned(addr)));
 		end if;
 	end process;

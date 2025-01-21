@@ -2,6 +2,23 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- A fifo component that holds the snakes segments addresses
+--
+-- GENERIC: 
+--		DATA_WIDTH: the width of the data lines (8 bit to fit values from 0 - 159 for the current usecase)
+--		ADDR_WIDTH: the size of the address also controls the ammount of memory the fifo controller can address
+--
+-- data_head/data_tail: the address of the head/tail in the bitfield
+-- count: the length of the snake
+--
+-- clk: the clock to use
+-- shift: trigger to remove the last segment of the snake
+-- push: trigger to push a new head segment to the snake
+-- data_in: the address of the new head being pusht.
+--
+-- reset: resets the fifo controller. NOTE: this will not reset the memory, but
+--    resetting the memory is not nescessary, since it will only be read after being written again
+
 entity fifo is
 	generic(
 		DATA_WIDTH: integer := 8;
@@ -24,39 +41,26 @@ entity fifo is
 end fifo;
 
 architecture arch of fifo is
-	type ram_type is array (0 to 2**ADDR_WIDTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-	signal ram: ram_type;
-	
-	signal head_ptr, head_ptr_next: unsigned(ADDR_WIDTH-1 downto 0);
-	signal tail_ptr, tail_ptr_next: unsigned(ADDR_WIDTH-1 downto 0);
-	signal head_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
-	signal tail_reg: std_logic_vector(DATA_WIDTH-1 downto 0);
+	signal addr_a, addr_b: std_logic_vector(ADDR_WIDTH-1 downto 0);
+	signal we_a: std_logic;
+	signal d_a: std_logic_vector(DATA_WIDTH-1 downto 0);
 begin
-	count <= std_logic_vector(unsigned(head_ptr) - unsigned(tail_ptr) + 1);
-
-	process(clk, reset) begin
-		if(reset = '1') then
-			head_ptr <= (others=>'1');
-			tail_ptr <= (others=>'0');
-		elsif(rising_edge(clk)) then
-			head_ptr <= head_ptr_next;
-			if(push = '1') then
-				ram(to_integer(head_ptr_next)) <= data_in;
-				head_reg <= data_in;
-			else 
-				head_reg <= ram(to_integer(head_ptr_next));
-			end if;
-			tail_ptr <= tail_ptr_next;
-			if(push = '1' and head_ptr_next = tail_ptr_next) then
-				tail_reg <= data_in;
-			else
-				tail_reg <= ram(to_integer(unsigned(tail_ptr_next)));
-			end if;
-		end if;
-	end process;
+	-- using an true-dualport M4K RAM
+	ram: entity work.dualport_ram(arch) 
+	generic map(ADDR_WIDTH=>ADDR_WIDTH, DATA_WIDTH=>DATA_WIDTH) 
+	port map(clk=>clk, 
+		q_a=>data_head, q_b=>data_tail,
+		addr_a=>addr_a, addr_b=>addr_b, we_a=>we_a, d_a=>d_a,
+		d_b=>(others=>'0'), we_b=>'0'
+	);
 	
-	data_head <= head_reg;
-   data_tail <= tail_reg;
-	head_ptr_next <= head_ptr when push = '0' else head_ptr + 1;
-	tail_ptr_next <= tail_ptr when shift = '0' else tail_ptr + 1;
+	-- fifo controller logic
+	fifoc: entity work.fifo_ctrl(arch) 
+	generic map(ADDR_WIDTH=>ADDR_WIDTH, DATA_WIDTH=>DATA_WIDTH) 
+	port map(clk=>clk, 
+		addr_a=>addr_a, addr_b=>addr_b, we_a=>we_a, d_a=>d_a,
+		count=>count, reset=>reset, push=>push, shift=>shift, data_in=>data_in
+	);
+
+
 end arch;

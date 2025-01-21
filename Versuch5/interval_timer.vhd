@@ -3,6 +3,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.MATH_REAL.all;
 
+-- an interval timer to take care of the game ticks
+--
+-- clk: the clock to use
+-- nhold: (NOT) stop the clock
+-- rst: (re)start the clock
+-- tps: the ticks per interval (divider of the counters max value)
+-- tick: output when the interval is over
 entity interval_timer is
 	generic (
 		-- using Generics here, so we can reuse the timer entity with different timeouts
@@ -32,6 +39,7 @@ architecture arch of interval_timer is
 	 constant COUNTER_SIZE: integer := integer(ceil(log2(real(COUNTER_LIMIT))));
 	 
 	 type counter_limits is array(0 to 7) of integer;
+	 -- the divisions there are calculated during compile time, so they won't generate any logic.
 	 constant END_VALUES: counter_limits := (
 		COUNTER_LIMIT,
 		COUNTER_LIMIT / 2,
@@ -43,9 +51,12 @@ architecture arch of interval_timer is
 		COUNTER_LIMIT / 8
     );
 	 
+	 -- counters to keep track of the number of clockcycles that happened
 	 signal counter, counter_next: unsigned(COUNTER_SIZE-1 downto 0);
 	 signal tick_next: std_logic;
 	 
+	 -- buffer to hold the TPS Value as long as the timer is running. 
+	 -- a new tps value will only be accepted when the timer is on hold
 	 signal ticksPerInterval, ticksPerInterval_next: std_logic_vector(2 downto 0);
 	
 begin
@@ -67,6 +78,8 @@ begin
 			-- timer waiting to start
 			when IDLE =>
 				counter_next <= (others=>'0');
+				-- start the timer
+				-- this copies the tps value to a register, so the timer will not be effected by a change unless the timer is stopped first.
 				if(rst = '1') then
 					ticksPerInterval_next <= tps;
 					state_next <= WAITING;

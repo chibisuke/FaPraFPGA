@@ -53,11 +53,13 @@ architecture arch of game_logic is
 	signal board_wr_value_next: std_logic;
 	signal board_wr_addr_next: std_logic_vector(7 downto 0);
 	signal new_diamond, new_diamond_next: std_logic;
+	signal fields_to_keep, fields_to_keep_next: unsigned(3 downto 0);
 begin
 	
 	process(clk, rst) begin
 		if(rst = '1') then
 			state <= RESET;
+			fields_to_keep <= x"0";
 		elsif(rising_edge(clk)) then
 			state <= state_next;	
 			fifo_in <= fifo_in_next;		
@@ -71,10 +73,11 @@ begin
 			board_wr_addr <= board_wr_addr_next;
 			board_wr_value <= board_wr_value_next;
 			new_diamond <= new_diamond_next;
+			fields_to_keep <= fields_to_keep_next;
 		end if;
 	end process;
 	
-	process(state, state_next, next_is_diamond, diamond_field_state, next_field, tick, rst, addr_tail, next_field_state, snake_length, new_diamond) begin
+	process(state, state_next, next_is_diamond, diamond_field_state, next_field, tick, rst, addr_tail, next_field_state, snake_length, new_diamond, fields_to_keep) begin
 			state_next <= state;
 			fifo_push_next <= '0';
 			fifo_in_next <= x"00";
@@ -87,6 +90,7 @@ begin
 			board_wr_value_next <= '0';
 			board_wr_addr_next <= x"00";
 			new_diamond_next <= '0';
+			fields_to_keep_next <= fields_to_keep;
 			case state is 
 				when INIT =>
 					if(rst = '1') then
@@ -138,11 +142,16 @@ begin
 								new_diamond_next <= '1';
 							else 
 								state_next <= WAIT_DIAMOND;
+								fields_to_keep_next <= fields_to_keep + 2;
 							end if;
 							permutate_rng_next <= '1';
 							score_inc_next <= '1';
-						else
+						elsif(fields_to_keep = x"0") then
 							state_next <= REMOVE_TAIL;
+						else 
+							fields_to_keep_next <= fields_to_keep - 1;
+							state_next <= WAIT_FOR_TICK;
+							trigger_update_next <= '1';
 						end if;
 					end if;
 				WHEN REMOVE_TAIL=>

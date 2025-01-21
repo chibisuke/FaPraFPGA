@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 -- This ROM entity contains the init sequence of the display (beginning at address x00)
--- and the init sequence for the initial display content (beginning at addres x10)
+-- and the game over screen (beginning at addres x60)
 
 -- Using Altera synchronous single-port ROM Emulation with registered read data (M4K module)
 --
@@ -22,7 +22,7 @@ end lcd_init_rom;
 
 architecture arch of lcd_init_rom is
 	type mem_2d_type is array (0 to 2**7) of std_logic_vector(11 downto 0);
-	constant display_rom: mem_2d_type := (
+	constant DISPLAY_ROM: mem_2d_type := (
 		--
 		-- Init LCD
 		--
@@ -43,7 +43,7 @@ architecture arch of lcd_init_rom is
 		x"001", -- Clear display
 		-- NO null termination here, since init seq and text init are executed as one operation
 		
-		-- Init Character RAM 
+		-- Init Character CGRAM 
 		x"040",
 		x"400", x"400", x"400", x"400", x"400", x"400", x"400", x"400",
 		x"400", x"400", x"400", x"400", x"41F", x"41F", x"41F", x"41F",
@@ -55,7 +55,7 @@ architecture arch of lcd_init_rom is
 		x"41F", x"41F", x"41F", x"41F", x"404", x"40E", x"40E", x"404",
 		x"000",
 		
-		-- 0x50
+		-- 0x50 -- padding
 		x"000", x"000", x"000", x"000", x"000", x"000", x"000", x"000",
 		x"000", x"000", x"000", x"000", x"000", x"000", x"000", x"000",
 		
@@ -63,16 +63,12 @@ architecture arch of lcd_init_rom is
 		--
 	   -- ADDR: 0x60 - GAME OVER
 		--
-		
-		
 		x"001", x"0A5", -- Set DDRAM Address = 00H (Pos 1,0)
 		x"447", x"441", x"44D", x"445", x"420", x"44F", x"456", x"445", x"452", -- GAME OVER
 		x"0C4",
 		x"444", x"469", x"461", x"46d", x"46f", x"46e", x"464", x"473", x"43a", -- Diamonds:
-		x"600", x"601",
+		x"600", x"601", x"000",
 	
-	--  "M"	   "a"     "t"     "r"     "."     "-"     "N"     "r"     "."     ":"     SP
-	--	x"400", x"401", x"402", x"403", x"404", x"405", x"406", x"407", x"400", x"401", x"402", x"403", x"404", x"405", x"406", x"407", x"400", x"401", x"402", x"403", x"404", x"405", x"406", x"407",		
 		others=>x"000" -- fill remaining rom segments with zeros
 	);
 	signal data_reg: std_logic_vector(11 downto 0);
@@ -80,7 +76,7 @@ begin
 	process (clk,addr)
 	begin
 		if(rising_edge(clk)) then
-			data_reg <= display_rom(to_integer(unsigned(addr)));	
+			data_reg <= DISPLAY_ROM(to_integer(unsigned(addr)));	
 		end if;
 	end process;
 	q <= data_reg;

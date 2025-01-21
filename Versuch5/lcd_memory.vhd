@@ -12,11 +12,9 @@ use ieee.numeric_std.all;
 --		is unsupported any may result in wrong data being read. 
 --
 -- Address Ranges:
---		x00 - x3f: init sequence of the LCD
---		[x40 - x7f: reserved for internal use (contains the raw char rom data)]
---		x80 - x87: the temperature update sequence
---		[x88 - xBF: unused (will read the temperature registers in a loop)]
---		xC0 - xff: the char update sequence
+--		x00 - x5f: init sequence of the LCD
+--		x60 - x7f: Game over screen
+--		x80 - xff: the Game Board
 --
 -- clk: the clock to use
 -- addr: the requested address
@@ -44,10 +42,10 @@ architecture arch of lcd_memory is
 	
 
 begin
-	-- the M4K Emulated ROM that contains all the commands, including information on where to place char data in the char_reg.
-	-- 	NOTE: char rom internal address range is x40 - x7f
+	-- the M4K Emulated ROM that contains all the commands for init and gameOver, including information on where to place the score
 	rom: entity work.lcd_init_rom(arch) port map(clk=>clk, addr=>addr(6 downto 0), Q=>init_rom_data);
 	
+	-- this emulated a rom that contains the current score board LCD Write commands
 	gameboard_reader: entity work.lcd_mem_gameboard_reader(arch) port map(clk=>clk, board=>game_board, addr=>addr(6 downto 0), q=>gameboard_cmd_data,
 		diamond=>diamond
 	);
@@ -55,5 +53,6 @@ begin
 	-- the multiplexer selecting the memory source based on the address
 	mem_mux: entity work.lcd_mem_mux(arch) port map(addr=>addr, init_rom_data=>init_rom_data_with_score, gameboard_cmd_data=>gameboard_cmd_data, data=>data);
 	
+	-- since we're only replacing two values the combinatorial logic is short enougth to put it in line with the tom data
 	lcd_mem_scorelogic: entity work.lcd_mem_scorelogic(arch) port map(score=>score, rom_data=>init_rom_data, q=>init_rom_data_with_score);
 end arch;
