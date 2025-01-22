@@ -92,7 +92,7 @@ begin
 		next_is_diamond=>next_is_diamond, rst=>rst, nhold=>nhold, lcd_init_done=>lcd_init_done, rstsig=>rstsig
 	);
 	logic: entity work.game_logic(arch) port map(clk=>clk,
-		dir=>dir, tick=>tick, rst=>rst,
+		tick=>tick, rst=>rst,
 		trigger_update=>trigger_update, trigger_game_over=>trigger_game_over,
 		board_wr=>board_wr, board_wr_value=>board_wr_value, board_wr_addr=>board_wr_addr,
 		addr_tail=>addr_tail, fifo_shift=>fifo_shift, fifo_push=>fifo_push, fifo_in=>fifo_in,

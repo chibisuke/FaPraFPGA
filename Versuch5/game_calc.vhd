@@ -106,7 +106,10 @@ begin
 		
 	end process;
 		
+	-- fetch the state of the field the diamond is on from the board
 	diamond_field_state <= board(to_integer(diamond_field_value));
+	-- check if the field the diamond is on is the next field the snakes head
+	-- will move to
 	process(next_field_value, diamond_field_value) begin
 		if(next_field_value = diamond_field_value) then
 			next_is_diamond <= '1';
@@ -115,18 +118,22 @@ begin
 		end if;
 	end process;
 	
+	-- calculate the movement of the snake (+/- 1 line, +/1 1 cell)
 	with dir select
 		next_field_offset <=
 			x"EC" when work.types.NORTH, -- -20
 			x"14" when work.types.SOUTH, -- + 20
 			x"FF" when work.types.WEST,  -- -1
 			x"01" when work.types.EAST;  -- +1
+	-- add the calculated offset seperatly to prevent instanciating the adder 4 times.
 	next_field_value <= unsigned(addr_head) + next_field_offset;
+
 	
+	next_field_next <= std_logic_vector(next_field_value);
+	-- fetch the value of the next field from the board
+	next_field_state_next <= board(to_integer(next_field_value));	
 	-- break the critical path to increate Fmax by around 15MHz
 	-- without impacting the logic in any way
-	next_field_next <= std_logic_vector(next_field_value);
-	next_field_state_next <= board(to_integer(next_field_value));	
 	process(clk) begin
 		if(rising_edge(clk)) then
 			next_field <= next_field_next;

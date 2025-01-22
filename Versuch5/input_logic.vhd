@@ -4,13 +4,21 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.types.all;
 
+-- logic to process the direction selection
+--
+-- clk: the clock to use
+-- key_trigger: the edges of the key switches to select the direction
+-- rst: reset signal - resets the direction to EAST
+-- dir: the directional output
+-- trigger_update: signal that a tick was processed, so the current direction
+--		was applied
+
 entity input_logic is
 	port(
 		clk: in std_logic;
 		
 		key_trigger: in std_logic_vector(3 downto 0);
 		rst: in std_logic;
-		sw: in std_logic_vector(3 downto 0);
 		
 		dir: out work.types.direction;
 		trigger_update: in std_logic
@@ -24,6 +32,7 @@ architecture arch of input_logic is
 begin
 	dir <= direction;
 	
+	-- choose new directional signal based on input and previous direction
 	process (key_trigger, rst, direction, prev_direction) begin
 		direction_next <= direction;
 		if(rst = '1' or (key_trigger(0) = '1' and prev_direction /= WEST)) then 
@@ -40,6 +49,7 @@ begin
 	process(clk) begin
 		if(rising_edge(clk)) then
 			direction <= direction_next;
+			-- store old direction, so we can determine if the new direction is valid
 			if(trigger_update = '1') then
 				prev_direction <= direction_next;
 			end if;

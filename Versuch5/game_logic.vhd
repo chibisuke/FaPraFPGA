@@ -2,12 +2,37 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- this is the core logic of the game_logic
+--
+-- clk: the clock to use
+-- tick: its time for a new game tick
+-- rst: reset the game to its initial state
+--
+-- board_wr, board_wr_value, board_wr_addr: connections to the game board
+--
+-- trigger_update: signal that a tick was completely processed
+-- trigger_game_over: signal that the game over condition was met
+--
+-- score_inc: increase the game score
+--
+-- diamond_field_state: the state of the field the rng selected the diamond to be on
+-- 	this is only relevant when a new RNG value was created and is not yet validated
+-- next_field: the address of the next field the head will move to
+-- next_field_state: the state of that field
+-- next_is_diamond: the next field contains the diamond
+--
+-- addr_tail: the address of the snakes tail
+-- fifo_in, fifo_shift, fifo_push: signals to update the snake fifo
+-- snake_length: the current length of the snake
+--		used to determine if we have reached the maxmimum length
+--
+-- permutate_rng: trigger the RNG to create a new diamond value
+-- 
 entity game_logic is
 	port(
-		clk: in std_logic; --used
-		tick: in std_logic; -- used
-		rst: in std_logic; -- used
-		dir: in work.types.direction;
+		clk: in std_logic; 
+		tick: in std_logic; 
+		rst: in std_logic; 
 		
 		board_wr: out std_logic;
 		board_wr_value: out std_logic;
@@ -137,7 +162,7 @@ begin
 						board_wr_next <= '1';
 						board_wr_addr_next <= next_field;
 						if(next_is_diamond = '1') then
-							if(unsigned(snake_length) > 32) then
+							if((unsigned(snake_length) + fields_to_keep) > 32) then
 								state_next <= REMOVE_TAIL;
 								new_diamond_next <= '1';
 							else 

@@ -6,5 +6,4 @@ package types is
 	subtype tGameBoard is std_logic_vector(0 to 159);
 	-- type for the direction the snake is moveing to
 	type direction is (NORTH, SOUTH, WEST, EAST);
-
 end package types;
