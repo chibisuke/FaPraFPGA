@@ -38,25 +38,22 @@ entity game_logic is
 		board_wr_value: out std_logic;
 		board_wr_addr: out std_logic_vector(7 downto 0);
 		
-		trigger_update: out std_logic; --used
-		trigger_game_over: out std_logic; -- used
-		score_inc: out std_logic; -- used
+		trigger_update: out std_logic;
+		trigger_game_over: out std_logic; 
+		score_inc: out std_logic; 
 		
-		diamond_field_state: in std_logic; -- used
+		diamond_field_state: in std_logic; 
 		next_field: in std_logic_vector(7 downto 0);
 		next_field_state: in std_logic;
 		next_is_diamond: in std_logic;
 		
-		-- fifo:
-		--addr_head: in std_logic_vector(7 downto 0);
 		addr_tail: in std_logic_vector(7 downto 0);
-		fifo_in: out std_logic_vector(7 downto 0); --used
-		fifo_shift: out std_logic; --used
-		fifo_push: out std_logic; --used
+		fifo_in: out std_logic_vector(7 downto 0);
+		fifo_shift: out std_logic; 
+		fifo_push: out std_logic; 
 		snake_length: in std_logic_vector(5 downto 0);
 		
-		--rng:
-		permutate_rng: out std_logic --used
+		permutate_rng: out std_logic
 	);
 end game_logic;
 

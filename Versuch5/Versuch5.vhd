@@ -1,8 +1,8 @@
 --******************************************************
---Versuch:
---Name:
---Matrikel-Nr.:
---Zeitbedarf:
+--Versuch: 5
+--Name: Rene Henzinger
+--Matrikel-Nr.: 4292642
+--Zeitbedarf: 18 Stunden
 --******************************************************
 
 library ieee;
