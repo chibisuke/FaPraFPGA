@@ -28,10 +28,6 @@ entity interval_timer is
 end interval_timer;
 
 architecture arch of interval_timer is
-	 type state_type is (IDLE, WAITING, TRIGGERED);
-	 
-    signal state : state_type := IDLE;
-	 signal state_next: state_type;
 	 -- since we have the input clock frequency already in MHz, we can simply multiply
 	 constant COUNTER_LIMIT: integer := input_clk*timeout;
 	 -- number of bits needed to store the counter, calculated from the generic values
@@ -52,56 +48,30 @@ architecture arch of interval_timer is
     );
 	 
 	 -- counters to keep track of the number of clockcycles that happened
-	 signal counter, counter_next: unsigned(COUNTER_SIZE-1 downto 0);
-	 signal tick_next: std_logic;
-	 
-	 -- buffer to hold the TPS Value as long as the timer is running. 
-	 -- a new tps value will only be accepted when the timer is on hold
-	 signal ticksPerInterval, ticksPerInterval_next: std_logic_vector(2 downto 0);
-	
+	 signal counter, counter_next: unsigned(COUNTER_SIZE downto 0);
+	 signal counter_start, counter_start_next: unsigned(COUNTER_SIZE downto 0);
+	 signal ticko, tick_next: std_logic;	
 begin
 
 	process (clk) begin
 		if(rising_edge(clk)) then
-			ticksPerInterval <= ticksPerInterval_next;
-			counter <= counter_next;
-			tick <= tick_next;
-			state <= state_next;
+			if(rst = '1') then
+				counter_start <= counter_start_next;
+				counter <= counter_start_next;
+				ticko <= '0';
+			elsif(nhold = '1') then
+				counter <= counter_next;
+				ticko <= tick_next;
+			end if;
 		end if;
 	end process;
-
-	process (state, counter, rst, ticksPerInterval, tps, nhold) begin
-		tick_next <= '0';
-		state_next <= state;
-		ticksPerInterval_next <= ticksPerInterval;
-		case state is 
-			-- timer waiting to start
-			when IDLE =>
-				counter_next <= (others=>'0');
-				-- start the timer
-				-- this copies the tps value to a register, so the timer will not be effected by a change unless the timer is stopped first.
-				if(rst = '1') then
-					ticksPerInterval_next <= tps;
-					state_next <= WAITING;
-				end if;
-			-- timer running
-			when WAITING =>
-				counter_next <= counter + 1;
-				if(nhold = '0') then
-					state_next <= IDLE;
-				elsif(counter = END_VALUES(to_integer(unsigned(ticksPerInterval)))) then
-					state_next <= TRIGGERED;
-				end if;
-			-- timer completed
-			when TRIGGERED =>
-				counter_next <= (others=>'0');
-				tick_next <= '1';
-				if(nhold = '0') then
-					state_next <= IDLE;
-				else
-					state_next <= WAITING;
-				end if;
-		end case;				
-	end process;
-
+	-- a tick occured each time counter becomes negative
+	-- since it will be reset in the next line, this will be high for only once clock cycle
+	-- suppress if on hold
+	tick_next <= counter(COUNTER_SIZE) and nhold;
+	-- decrement the counter, reset if a tick occured
+	counter_next <= counter - 1 when ticko = '0' else counter_start;
+	-- copy the starting value, so it cannot be changed when the timer is running
+	counter_start_next <= to_unsigned(END_VALUES(to_integer(unsigned(tps))), counter_start_next'length);
+	tick <= ticko;
 end arch;

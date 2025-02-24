@@ -3,9 +3,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.MATH_REAL.all;
 
--- copy from Versuch4 - unmodified
+-- reforced from Versuch 4 to not use FSM.
 
--- a simple timer circuit
+-- a simple timer circuit (now retriggerable)
 -- 
 -- generic: 
 -- 	input_clk - the frequency of the clk in MHz. 
@@ -29,54 +29,35 @@ entity timer is
 	);
 end timer;
 
-architecture arch of timer is
-	 type state_type is (IDLE, WAITING, TRIGGERED);
-	 
-    signal state : state_type := IDLE;
-	 signal state_next: state_type;
-	 
+architecture arch of timer is	 
 	 -- since we have the input clock frequency already in MHz, we can simply multiply
 	 constant COUNTER_LIMIT: integer := input_clk*timeout;
 	 -- number of bits needed to store the counter, calculated from the generic values
 	 -- note: we can use log2 here, because this is calculated during synthesis, not at runtime
 	 constant COUNTER_SIZE: integer := integer(ceil(log2(real(COUNTER_LIMIT))));
 	 
-	 signal counter, counter_next: unsigned(COUNTER_SIZE-1 downto 0);
-	 signal fire_next: std_logic;
+	 -- counter registers
+	 signal counter, counter_next: unsigned(COUNTER_SIZE downto 0);
+	 -- time elapsed
+	 signal fireo, fire_next: std_logic;
+	 -- running state
+	 signal running, running_next: std_logic;
 	 
 	 
 begin
 	process (clk) begin
 		if(rising_edge(clk)) then
+			running <= running_next;
+			fireo <= fire_next;
 			counter <= counter_next;
-			fire <= fire_next;
-			state <= state_next;
 		end if;
 	end process;
-
-	process (state, counter, start) begin
-		fire_next <= '0';
-		state_next <= state;
-		case state is 
-			-- timer waiting to start
-			when IDLE =>
-				counter_next <= (others=>'0');
-				if(start = '1') then
-					state_next <= WAITING;
-				end if;
-			-- timer running
-			when WAITING =>
-				counter_next <= counter + 1;
-				if(counter = COUNTER_LIMIT) then
-					state_next <= TRIGGERED;
-				end if;
-			-- timer completed
-			when TRIGGERED =>
-				counter_next <= (others=>'0');
-				fire_next <= '1';
-				state_next <= IDLE;
-		end case;				
-	end process;
-
-
+	-- time elapsed when counter is negative (MSB is set)
+	fire_next <= counter(COUNTER_SIZE) and running;
+	-- stop when triggered, otherwise keep running once start was set
+	running_next <= not fireo and (running or start);
+	-- decrement the counter - if retrigggered, reset to initial value
+	counter_next <= counter - 1 when start = '0' else to_unsigned(COUNTER_LIMIT, counter_next'length);
+	
+	fire <= fireo;
 end arch;
