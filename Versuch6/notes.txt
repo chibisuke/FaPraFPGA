@@ -1,0 +1,18 @@
+- PLL as "FastClk" (fclk)
+	100MHz = 10ns per cycle - the max the SRAM chip can do according to the datasheet.
+	if we manage to take exactly one clkcycle for each memory access 100MHz will give us max speed.
+	
+- MemTest suit
+	we should be able to keep the critical paths short enougth to have the whole memory test run on FCLK
+	that way we can save a lot of overhead on properly syncronizing the clocks
+	the only clock domain transition is then to the LCD. 
+	
+- clock domain transition
+	Even though we're allowed to skip proper syncronization for the data that are sent to the LCD, the trigger Signal that triggers the update
+	of the LCD is just a pulse. So we should take care of proper Clock Domain Crossing there. 
+	This requires to Keep the pulse high for Long enougth that a single Clock cycle of the slower Clock can pick it up. 
+	Theoretically the absolute Minimum is 2 Clock cycles, but taking the runetime of the Signal and some clock drift into Account,
+	there might be situations where it doesn't work out. so we should go for 3 Clock cycles. 
+	the testsuit should Buffer the Signal in a single Register, then the LCD Logic can Takeover the Signal and syncronize it using
+	a two stage Flipflop Buffer. 
+	
