@@ -1,8 +1,8 @@
 --******************************************************
---Versuch:
---Name:
---Matrikel-Nr.:
---Zeitbedarf:
+--Versuch: 6
+--Name: Rene Henzinger
+--Matrikel-Nr.: 4292642
+--Zeitbedarf: 18 Stunden
 --******************************************************
 
 library ieee;
@@ -36,16 +36,22 @@ architecture arch of Versuch6 is
 	signal fclk: std_logic;
 	signal update_lcd: std_logic;
 begin
+
+	-- PLL to generate the faster clock required to max out the performance of the SRAM
+	pll_fclk: entity work.pll port map(inclk0=>clk, c0=>fclk);
+
+	-- TWO edge detection circuits, one for each clock, so we have the signal in the correct
+	-- clock domain without having to cross clock domains. 
 	ed_key0_f: entity work.edge_detect(arch) port map(clk=>fclk, input=>key0, edge=>start);
 	ed_key0_c: entity work.edge_detect(arch) port map(clk=>clk, input=>key0, edge=>reset);
 	
-	pll_fclk: entity work.pll port map(inclk0=>clk, c0=>fclk);
-
-
+	-- the LCD to display the results running at 50MHz
 	lcd: entity work.lcd(arch) port map(clk=>clk, reset=>reset, sda=>lcd_sda, scl=>lcd_scl, lcd_reset=>lcd_reset, update_lcd=>update_lcd, 
 		display_data=>display_data
 	);
 	
+	-- the memory test suit, containing the memory controler
+	-- Completely running at the 100MHz PLL Clock
 	ram: entity work.mem_test(arch) port map(fclk=>fclk, display_data=>display_data,
 		sram_addr=>sram_addr, sram_dq=>sram_dq, sram_we_n=>sram_we_n,
 		status_write=>ledg(1), status_verify=>ledg(0), status_error=>ledr(0),

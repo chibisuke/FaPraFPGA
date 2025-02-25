@@ -22,9 +22,9 @@ entity lcd_i2c_writer is
 		clk: in std_logic;
 		
 		mem_data: in std_logic_vector(11 downto 0);
-		mem_addr: out std_logic_vector(7 downto 0);
+		mem_addr: out std_logic_vector(6 downto 0);
 		
-		start_addr: in std_logic_vector(7 downto 0);
+		start_addr: in std_logic_vector(6 downto 0);
 		start: in std_logic;
 		done: out std_logic;
 		
@@ -50,8 +50,8 @@ architecture arch of lcd_i2c_writer is
 	 signal state_next: state_type;	 
 	 
 	 -- signals for the next logic
-	 signal current_addr, current_addr_next: std_logic_vector(7 downto 0);
-	 signal current_addr_inc: std_logic_vector(7 downto 0);
+	 signal current_addr, current_addr_next: std_logic_vector(6 downto 0);
+	 signal current_addr_inc: std_logic_vector(6 downto 0);
 	 signal done_next: std_logic;
 	 
 	 signal i2c_en, i2c_ena_next: std_logic;

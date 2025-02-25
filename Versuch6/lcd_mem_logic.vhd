@@ -33,7 +33,7 @@ architecture arch of lcd_mem_logic is
 		end if;
 	end function;
 	
-	signal index: integer range 0 to 31;
+	signal index: integer range 0 to 27;
 begin
 	-- offset to select which halfbyte to use, multiplied by 4 (bitshift << 2)
 	index <= to_integer(unsigned(data_in(3 downto 0) & "00"));

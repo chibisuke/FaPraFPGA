@@ -42,7 +42,7 @@ architecture arch of lcd is
 	constant LCD_ADDRESS: std_logic_vector(6 downto 0) := "0111101"; -- x3D I2C address
 
 	-- signals for memory access
-	signal mem_address: std_logic_vector(7 downto 0);
+	signal mem_address: std_logic_vector(6 downto 0);
 	signal mem_data: std_logic_vector(11 downto 0);
 	
 	-- signals for the I2C Writer
@@ -60,7 +60,7 @@ architecture arch of lcd is
 	-- signals linking the control logic to the LCD Specific I2C Logic 
 	signal start_write: std_logic;
 	signal write_done: std_logic;
-	signal write_start_addr: std_logic_vector(7 downto 0);
+	signal write_start_addr: std_logic_vector(6 downto 0);
 	
 begin
 	-- This is the memory entity that delivers all the commands to be sent to the display

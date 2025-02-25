@@ -34,7 +34,9 @@ entity mem_test_reader is
 end mem_test_reader;
 
 architecture arch of mem_test_reader is
-	signal rdaddr1, rdaddr2, rdaddr3, eaddr, addr_next: std_logic_vector(25 downto 0);
+	signal rdaddr1, rdaddr2, rdaddr3: std_logic_vector(15 downto 0);
+	signal endsig: std_logic_vector(1 downto 0);
+	signal eaddr, addr_next: std_logic_vector(25 downto 0);
 	signal reading: std_logic;
 	signal data_cmp: std_logic_vector(15 downto 0);
 begin
@@ -49,8 +51,11 @@ begin
 				-- it takes two clock cycles for the data_r to return for an address
 				-- plus one additional to be processed here, so 3 registers
 				rdaddr3 <= rdaddr2;
+				endsig(1) <= endsig(0);
 				rdaddr2 <= rdaddr1;
-				rdaddr1 <= eaddr;
+				endsig(0) <= eaddr(25);
+				rdaddr1 <= eaddr(15 downto 0);
+				
 				eaddr <= addr_next;
 				completion <= '0';
 				-- delay the verify until the first result arrived from the SRAM
@@ -58,7 +63,7 @@ begin
 				if((unsigned(rdaddr2) > 0 and data_cmp /= data_r) or simulate_error = '1') then
 					error <= '1';
 				end if;
-				if(rdaddr2(25) = '1') then
+				if(endsig(1) = '1') then
 					-- we continue the read until the the whole cycle is completed. we'll read the first two addresses
 					-- a second time because of the overflow, but this doesn't matter since we have to wait for the
 					-- data anyway. 

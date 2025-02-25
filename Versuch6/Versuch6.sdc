@@ -48,7 +48,7 @@ set_false_path -from [get_keepers {mem_test:ram|mem_test_logic:logic|*}] -to [ge
 
 # 
 # the update_lcd signal is crossing clock domain boundaries beween the mem_test_logic and the lcd_logic and therefor needs to be 
-# active an additional clock cycle, so we definitly hit the rising_edge(clk). The logic of mem_test_logic takes care of this, but 
+# active two additional clock cycle, so we definitly hit the rising_edge(clk). The logic of mem_test_logic takes care of this, but 
 # quartus doesn't seem to notice. We explicitly tell quartus, that its ok to miss one cycle here. 
 # 
 set_multicycle_path -hold -end -from [get_keepers {mem_test:ram|mem_test_logic:logic|update_lcd}] -to [get_keepers {lcd:lcd|lcd_logic:logic|update_lcd_sync1}] 2

@@ -51,12 +51,15 @@ architecture arch of mem_test_logic is
 	signal update_lcd_next: std_logic;
 	signal eerror, eerror_next: std_logic;
 	
-	-- clock cycle counter
-	signal clock_cycles, clock_cycles_next: std_logic_vector(31 downto 0);
+	-- clock cycle counter - since we have less then x1000_0000 clock cycles
+	-- we only use 28 bits to store them
+	signal clock_cycles, clock_cycles_next: std_logic_vector(27 downto 0);
 	-- read time counter in milliseconds as BCD counter
-	signal read_time_ms, read_time_ms_next: std_logic_vector(15 downto 0);
+	-- read time is way below 1000ms, so only use 3 digit BCD
+	signal read_time_ms, read_time_ms_next: std_logic_vector(11 downto 0);
 	-- write time counter in milliseconds as BCD counter
-	signal write_time_ms, write_time_ms_next: std_logic_vector(15 downto 0);
+	-- write time is way below 1000ms, so only use 3 digit BCD
+	signal write_time_ms, write_time_ms_next: std_logic_vector(11 downto 0);
 	-- counter register to count the milliseconds
 	-- NOTE: We use a counter register to count the milliseconds, instead of diving the 
 	--   clock cycles using a multiplyer. Multiplyers are really expensive and we can avoid it here.
@@ -130,7 +133,7 @@ begin
 					-- ms_counter is less than 0, so we need to reset it and increment
 					-- the read_time
 					ms_counter_next <= one_ms;
-					write_time_ms_next <= work.BCD.incBCD4(write_time_ms);
+					write_time_ms_next <= work.BCD.incBCD3(write_time_ms);
 				end if;
 				status_write_next <= '1';
 				if(wr_completion = '1') then
@@ -144,7 +147,7 @@ begin
 					-- ms_counter is less than 0, so we need to reset it and increment
 					-- the read_time
 					ms_counter_next <= one_ms;
-					read_time_ms_next <= work.BCD.incBCD4(read_time_ms);
+					read_time_ms_next <= work.BCD.incBCD3(read_time_ms);
 				end if;
 				status_verify_next <= '1';
 				if(rd_completion = '1') then
@@ -157,7 +160,7 @@ begin
 			when COMPLETED => 
 				-- keep update_lcd high for an two more clock cycle, to reliably manage cross clock domain sync
 				update_lcd_next <= '1';
-				state_next <= COMPLETED2;
+				state_next <= IDLE;
 				clock_cycles_next <= clock_cycles;
 			when COMPLETED2 => 
 				-- keep update_lcd high for an two more clock cycle, to reliably manage cross clock domain sync

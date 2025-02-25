@@ -21,7 +21,7 @@ entity lcd_init_rom is
 end lcd_init_rom;
 
 architecture arch of lcd_init_rom is
-	type mem_2d_type is array (0 to 2**7) of std_logic_vector(11 downto 0);
+	type mem_2d_type is array (0 to (2**7 - 1)) of std_logic_vector(11 downto 0);
 	constant DISPLAY_ROM: mem_2d_type := (
 		--
 		-- Init LCD
@@ -49,15 +49,15 @@ architecture arch of lcd_init_rom is
 		x"001", 
 		x"080", -- Line 1
 		x"454", x"461", x"46B", x"474", x"465", x"43A", x"420", x"430", x"478", -- Takte: 0x
-		x"607", x"606", x"605", x"604", x"603", x"602", x"601", x"600",
+		x"430", x"606", x"605", x"604", x"603", x"602", x"601", x"600",
 		x"0A0", -- Line 2
 		x"45A", x"465", x"469", x"474", x"420", x"428", x"457", x"429", x"43A", x"420", -- Zeit (W):
-		x"503", x"502", x"501", x"500", 
-		x"420", x"46D", x"473",
+		x"430", x"502", x"501", x"500", 
+		x"420", x"46D", x"473", -- ms
 		x"0C0", -- Line 3
 		x"45A", x"465", x"469", x"474", x"420", x"428", x"452", x"429", x"43A", x"420", -- Zeit (R):
-		x"513", x"512", x"511", x"510", 
-		x"420", x"46D", x"473",
+		x"430", x"512", x"511", x"510", 
+		x"420", x"46D", x"473", -- ms
 		x"0E0", -- Line 4
 		x"446", x"465", x"468", x"46C", x"465", x"472", x"43A", x"420", -- Fehler: 
 		x"700",

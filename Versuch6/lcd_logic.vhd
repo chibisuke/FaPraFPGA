@@ -35,7 +35,7 @@ entity lcd_logic is
 		
 		start_write: out std_logic;
 		write_done: in std_logic;
-		write_start_addr: out std_logic_vector(7 downto 0);
+		write_start_addr: out std_logic_vector(6 downto 0);
 		
 		trigger_update_lcd: in std_logic;
 		trigger_reset: in std_logic;
@@ -63,7 +63,7 @@ architecture arch of lcd_logic is
 	 signal lcd_reset_next: std_logic;	 
 	 
 	 signal start_write_next: std_logic;
-	 signal write_start_addr_next: std_logic_vector(7 downto 0);
+	 signal write_start_addr_next: std_logic_vector(6 downto 0);
 	 
 	 signal update_lcd, update_lcd_next: std_logic;
 	 signal do_reset, do_reset_next: std_logic;
@@ -140,7 +140,7 @@ begin
 			-- display, we do not need an additional timer here
 			when INIT_SEQ => 
 				start_write_next <= '1';
-				write_start_addr_next <= x"00";
+				write_start_addr_next <= "0000000";
 				if(write_done = '1') then
 					lcd_init_done_next <= '1';
 					next_state <= WAIT_MAIN;
@@ -157,7 +157,7 @@ begin
 			-- write the LCD Contents after the mem_test was completed
 			WHEN DO_UPDATE_LCD =>
 				start_write_next <= '1';
-				write_start_addr_next <= x"10";
+				write_start_addr_next <= "0010000";
 				update_lcd_next <= '0';
 				if(write_done = '1') then
 					next_state <= WAIT_MAIN;
