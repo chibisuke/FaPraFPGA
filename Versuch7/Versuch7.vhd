@@ -20,11 +20,11 @@ entity Versuch7 is
 		aud_dacdat: out std_logic;
 		aud_adcdat: in std_logic;
 		
-		sw: in std_logic_vector(1 downto 0);
-		key: in std_logic_vector(0 downto 0);
+		sw: in std_logic_vector(2 downto 0);
+		key: in std_logic_vector(0 downto 0)
 		
-		out1: out std_logic; -- H12 IO_B1
-		out2: out std_logic -- H13 IO_B2
+		--out1: out std_logic; -- H12 IO_B1
+		--out2: out std_logic -- H13 IO_B2
 		
 	);
 end Versuch7;
@@ -34,10 +34,10 @@ architecture arch of Versuch7 is
 	signal i2c_wr: std_logic;
 	signal i2c_idle: std_logic;
 	
-	signal aud_i2c_sclk_int: std_logic;
+	--signal aud_i2c_sclk_int: std_logic;
 	
 	signal audio_data_in: std_logic_vector(31 downto 0);
-	signal audio_data_out: std_logic_vector(31 downto 0);
+	signal FIRout, audio_data_out: std_logic_vector(31 downto 0);
 	signal load_done_tick: std_logic;
 	
 	signal mem_wraddr: std_logic_vector(7 downto 0);
@@ -46,15 +46,15 @@ architecture arch of Versuch7 is
 	
 	signal trigger_key: std_logic;
 begin
-	out1 <= aud_i2c_sclk_int;
-	aud_i2c_sclk <= aud_i2c_sclk_int;
-	out2 <= aud_i2c_sdat;
+	--out1 <= aud_i2c_sclk_int;
+	--aud_i2c_sclk <= aud_i2c_sclk_int;
+	--out2 <= aud_i2c_sdat;
 
 	i2c: entity work.i2c(arch) port map(
 		clk=>clk, 
 		reset=>'0', 
 		din=>i2c_data, 
-		i2c_sclk=>aud_i2c_sclk_int, 
+		i2c_sclk=>aud_i2c_sclk, 
 		i2c_sdat=>aud_i2c_sdat, 
 		i2c_idle=>i2c_idle, 
 		i2c_fail=>open, 
@@ -80,6 +80,8 @@ begin
 	
 	-- audio_data_in <= audio_data_out(30 downto 16) & '0' & audio_data_out(14 downto 0) & '0';
 	
+	audio_data_in <= FIRout when sw(2) = '0' else audio_data_out;
+	
 	
 	memory: entity work.memory port map(
 		clock=>clk, 
@@ -97,9 +99,9 @@ begin
 		rd_addr=>mem_rdaddr,
 		rd_data=>rd_data,
 		start_addr=>mem_wraddr,
-		output=>audio_data_in,
+		output=>FIRout,
 		start=>load_done_tick,
-		filter_select=>sw,
+		filter_select=>sw(1 downto 0),
 		change_filter=>trigger_key
 	);
 	

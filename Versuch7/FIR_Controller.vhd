@@ -74,8 +74,8 @@ begin
 				coeff_next <= coeff + 1;
 				addr_next <= std_logic_vector(unsigned(addr) - 1);
 				-- coeffXdataL >> 19 # shift by 19 bit to compensate for fixed comma representation
-				sumL_next <= sumL + coeffXdataL(39 downto 19);
-				sumR_next <= sumR + coeffXdataR(39 downto 19);
+				sumL_next <= sumL + signed(coeffXdataL(39 downto 19));
+				sumR_next <= sumR + signed(coeffXdataR(39 downto 19));
 			when DONE =>
 				output_next <= std_logic_vector(sumL(15 downto 0)) & std_logic_vector(sumR(15 downto 0));
 				state_next <= IDLE;
