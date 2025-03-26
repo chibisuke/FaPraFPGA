@@ -20,7 +20,7 @@ entity Versuch7 is
 		aud_dacdat: out std_logic;
 		aud_adcdat: in std_logic;
 		
-		sw: in std_logic_vector(2 downto 0);
+		sw: in std_logic_vector(3 downto 0);
 		key: in std_logic_vector(0 downto 0)
 		
 		--out1: out std_logic; -- H12 IO_B1
@@ -40,8 +40,8 @@ architecture arch of Versuch7 is
 	signal FIRout, audio_data_out: std_logic_vector(31 downto 0);
 	signal load_done_tick: std_logic;
 	
-	signal mem_wraddr: std_logic_vector(7 downto 0);
-	signal mem_rdaddr: std_logic_vector(7 downto 0);
+	signal mem_wraddr: std_logic_vector(9 downto 0);
+	signal mem_rdaddr: std_logic_vector(9 downto 0);
 	signal rd_data: std_logic_vector(31 downto 0);
 	
 	signal trigger_key: std_logic;
@@ -80,7 +80,7 @@ begin
 	
 	-- audio_data_in <= audio_data_out(30 downto 16) & '0' & audio_data_out(14 downto 0) & '0';
 	
-	audio_data_in <= FIRout when sw(2) = '0' else audio_data_out;
+	audio_data_in <= FIRout when sw(3) = '0' else audio_data_out;
 	
 	
 	memory: entity work.memory port map(
@@ -101,7 +101,7 @@ begin
 		start_addr=>mem_wraddr,
 		output=>FIRout,
 		start=>load_done_tick,
-		filter_select=>sw(1 downto 0),
+		filter_select=>sw(2 downto 0),
 		change_filter=>trigger_key
 	);
 	

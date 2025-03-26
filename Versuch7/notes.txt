@@ -1,0 +1,7 @@
+Absolute max Coefficients: 1016 @ 48kHz
+
+48k * 12500 / 12288 = 48.829kHz
+
+50M / 48.829k = 1024 clock cycles per ADC cycle
+we need an additional 3 clock cycles for the filter processing so the absolute max for 
+out serial FIR Filter would be 1021 coefficients without exceeding the time we have

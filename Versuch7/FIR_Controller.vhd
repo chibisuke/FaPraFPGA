@@ -6,12 +6,12 @@ use work.constants.all;
 entity FIR_Controller is
 	port(
 		clk: in std_logic;
-		rd_addr: out std_logic_vector(7 downto 0);
+		rd_addr: out std_logic_vector(9 downto 0);
 		rd_data: in std_logic_vector(31 downto 0);
-		start_addr: in std_logic_vector(7 downto 0);
+		start_addr: in std_logic_vector(9 downto 0);
 		output: out std_logic_vector(31 downto 0);
 		start: in std_logic;
-		filter_select: in std_logic_vector(1 downto 0);
+		filter_select: in std_logic_vector(2 downto 0);
 		change_filter: in std_logic
 	);
 end FIR_Controller;
@@ -19,9 +19,9 @@ end FIR_Controller;
 architecture arch of FIR_Controller is
 	type tState is (IDLE, DO_START, RUN, DONE);
 	signal state, state_next: tState;
-	signal coeff, coeff_next: integer range 0 to 128;
+	signal coeff, coeff_next: integer range 0 to COEFF_LEN_MAX;
 	
-	signal addr, addr_next: std_logic_vector(7 downto 0);
+	signal addr, addr_next: std_logic_vector(9 downto 0);
 	signal sumL, sumL_next: signed(20 downto 0);
 	signal sumR, sumR_next: signed(20 downto 0);
 	signal coeffXdataL: signed(39 downto 0);
@@ -30,7 +30,7 @@ architecture arch of FIR_Controller is
 	
 	signal outputBuffer, output_next: std_logic_vector(31 downto 0);
 	
-	signal selected_filter: std_logic_vector(1 downto 0);
+	signal selected_filter: std_logic_vector(2 downto 0);
 begin
 	process(clk) begin
 		if(rising_edge(clk)) then
@@ -47,7 +47,7 @@ begin
 		end if;
 	end process;
 	
-	process(state, addr, outputBuffer, sumL, sumR, coeff, start_addr, start, rd_data, coeffXdataL, coeffXdataR, rd_buffer) begin
+	process(state, addr, outputBuffer, sumL, sumR, coeff, start_addr, start, rd_data, coeffXdataL, coeffXdataR, rd_buffer, selected_filter) begin
 		state_next <= state;
 		addr_next <= addr;
 		output_next <= outputBuffer;
@@ -68,7 +68,7 @@ begin
 				sumL_next <= (others=>'0');
 				sumR_next <= (others=>'0');
 			when RUN =>
-				if(coeff = 128) then
+				if(coeff = (COEFFICIENTS_LEN(to_integer(unsigned(selected_filter))) - 1)) then
 					state_next <= DONE;
 				end if;
 				coeff_next <= coeff + 1;

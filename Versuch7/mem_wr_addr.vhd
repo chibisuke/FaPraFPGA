@@ -6,13 +6,13 @@ entity mem_wr_addr is
 	port(
 		clk: in std_logic;
 		
-		wr_addr: out std_logic_vector(7 downto 0);
+		wr_addr: out std_logic_vector(9 downto 0);
 		incr: in std_logic
 	);
 end mem_wr_addr;
 
 architecture arch of mem_wr_addr is
-	signal addr,addr_next: std_logic_vector(7 downto 0);
+	signal addr,addr_next: std_logic_vector(9 downto 0);
 begin
 	process(clk) begin
 		if(rising_edge(clk)) then
