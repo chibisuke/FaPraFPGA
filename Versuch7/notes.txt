@@ -1,7 +1,43 @@
-Absolute max Coefficients: 1016 @ 48kHz
+Absolute max Coefficients: 1021 @ 48kHz
 
 48k * 12500 / 12288 = 48.829kHz
 
 50M / 48.829k = 1024 clock cycles per ADC cycle
 we need an additional 3 clock cycles for the filter processing so the absolute max for 
 out serial FIR Filter would be 1021 coefficients without exceeding the time we have
+=========================================================================
+
+GENERIC:
+BaseClock
+SampleFreqency => 8, 32, 48, 96 
+SampleSize => 16,20,24,32
+
+PORT:
+clk, adcdat, dacdat, mclk, bclk, adclrclk, daclrclk,
+sample_done
+
+mclk: 25MHz => 1/2 clk => divider /2 => CoreClock 12,5MHz
+
+bclk => 
+	8kHz * 16bit = mclk / 96
+	8kHz * 20bit = mclk / 76,8
+	# 8kHz * 24bit = mclk / 64
+	--8khz * 32bit = mclk / 48
+	
+	32kHz * 16bit = mclk / 24
+	32kHz * 20bit = mclk / 19,2
+	# 32kHz * 24bit = mclk / 16
+	--32kHz * 32bit = mclk / 12
+
+	# 48kHz * 16bit = mclk / 16
+	48kHz * 20bit = mclk / 12,8
+	48kHz * 24bit = mclk / 10,667
+	--# 48kHz * 32bit = mclk / 8
+	
+	# 96kHz * 16bit = mclk / 8
+	96kHz * 20bit = mclk / 6,4
+	96kHz * 24bit = mclk / 5,333
+	--# 96kHz * 32bit = mclk / 4
+	
+
+
