@@ -35,8 +35,9 @@ architecture dsp_A of adcdac is
 	signal dac_idle_next: std_logic;
 	signal dac_lr_old, adc_lr_old: std_logic;
 	signal adc_ready_next: std_logic;
-	signal adc_data_out_reg, adc_data_out_next: std_logic_vector(31 downto 0);
+	signal adc_data_out_reg, adc_data_out_next: std_logic_vector(ADB_BUFFER_LEN-1 downto 0);
 	signal dac_load: std_logic;
+	signal adc_read_done: std_logic;
 begin
 	process (clk) begin
 		if(rising_edge(clk)) then
@@ -66,6 +67,10 @@ begin
 			if(dac_lr_old = '0' and dac_lr_clk = '1') then
 				dac_load <= '1';
 			end if;
+			adc_read_done <= '0';
+			if(adc_lr_old = '0' and adc_lr_clk = '1') then
+				adc_read_done <= '1';
+			end if;
 		end if;
 		if(falling_edge(b_clk)) then
 			dac_out_buffer <= dac_out_buffer_next;
@@ -79,7 +84,8 @@ begin
 	dac_out_buffer_next <= dac_out_buffer(ADB_BUFFER_LEN-2 downto 0) & '0';
 	doRead <= '1' when (adc_in_counter < (WL*2)) else '0';
 	dacdat <= dac_out_buffer(ADB_BUFFER_LEN-1);
-	adc_ready_next <= '1' when (doRead_old = '1' and doRead = '0') else '0';
-	adc_data_out_next <= adc_in_buffer when (doRead_old = '1' and doRead = '0') else adc_data_out_reg;
+	adc_ready_next <= '1' when adc_read_done = '1' else '0';
+	adc_data_out_next <= adc_in_buffer when adc_read_done = '1' else adc_data_out_reg;
 	adc_data_out <= adc_data_out_reg;
-end dsp_A;
+end 
+;

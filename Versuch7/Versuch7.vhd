@@ -39,8 +39,8 @@ architecture arch of Versuch7 is
 	
 	--signal aud_i2c_sclk_int: std_logic;
 	
-	signal audio_data_in: std_logic_vector(31 downto 0);
-	signal FIRout, audio_data_out: std_logic_vector(31 downto 0);
+	signal audio_data_in: std_logic_vector(63 downto 0);
+	signal FIRout, audio_data_out: std_logic_vector(63 downto 0);
 	signal load_done_tick: std_logic;
 	
 	signal mem_wraddr: std_logic_vector(9 downto 0);
@@ -52,9 +52,9 @@ architecture arch of Versuch7 is
 	signal tmp, dac_idle: std_logic;
 	signal tmp_aud_dacdat: std_logic;
 begin
-	out1 <= audio_data_out(31);
+	out1 <= load_done_tick;
 	out2 <= b_clk;
-	out3 <= tmp;
+	out3 <= aud_adc_lr_clk;
 	out4 <= aud_dac_lr_clk;
 	aud_dacdat <= tmp_aud_dacdat;
 	
@@ -88,7 +88,9 @@ begin
 --		load_done_tick=>load_done_tick
 --	);	
 
-	adcdac: entity work.adcdac(dsp_A) port map(
+	adcdac: entity work.adcdac(dsp_A) 
+	generic map(WL=>32)
+	port map(
 		clk=>clk,
 		dac_data_in=>audio_data_in,
 		adc_data_out=>audio_data_out,
