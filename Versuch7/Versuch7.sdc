@@ -39,6 +39,6 @@ derive_pll_clocks -create_base_clocks
 # tco constraints
 
 # tpd constraints
-set_multicycle_path -to [get_pins -compatibility_mode adcdac|dac_out_buffer*] -hold -end 2
-set_multicycle_path -from [get_pins -compatibility_mode adcdac|adc_in_counter*] -hold -end 2
+set_multicycle_path -from [get_pins -compatibility_mode adcdac|adc_in_buffer*] -to [get_pins -compatibility_mode adcdac|adc_data_out_reg*] -hold -end 2
+#set_multicycle_path -from [get_pins -compatibility_mode adcdac|adc_in_counter*] -hold -end 2
 

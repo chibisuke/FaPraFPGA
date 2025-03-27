@@ -6,9 +6,9 @@ package constants is
 	constant COEFF_LEN_MAX: integer := 1000;
 
 	type tCoeff is array(0 to COEFF_LEN_MAX-1) of signed(23 downto 0);
-	type tCoeffArr is array(0 to 7) of tCoeff;
+	type tCoeffArr is array(0 to 3) of tCoeff;
 	subtype tCoeffLenRange is integer range 0 to 1000;
-	type tCoeffLen is array(0 to 7) of tCoeffLenRange;
+	type tCoeffLen is array(0 to 3) of tCoeffLenRange;
 	
 	constant COEFFICIENTS_1_LEN: integer range 0 to COEFF_LEN_MAX := 129;
 	constant COEFFICIENTS_1: tCoeff := (
@@ -629,12 +629,12 @@ others=>x"000000"
 );
 	
 	constant COEFFICIENTS_LEN: tCoeffLen := (
-		COEFFICIENTS_1_LEN, COEFFICIENTS_2_LEN, COEFFICIENTS_3_LEN, COEFFICIENTS_4_LEN, 
-		COEFFICIENTS_5_LEN, COEFFICIENTS_6_LEN, COEFFICIENTS_7_LEN, COEFFICIENTS_8_LEN
+		COEFFICIENTS_1_LEN, COEFFICIENTS_2_LEN, COEFFICIENTS_3_LEN, COEFFICIENTS_4_LEN 
+		--COEFFICIENTS_5_LEN, COEFFICIENTS_6_LEN, COEFFICIENTS_7_LEN, COEFFICIENTS_8_LEN
 	);
 	constant COEFFICIENTS: tCoeffArr := (
-		COEFFICIENTS_1, COEFFICIENTS_2, COEFFICIENTS_3, COEFFICIENTS_4, 
-		COEFFICIENTS_5, COEFFICIENTS_6, COEFFICIENTS_7, COEFFICIENTS_8
+		COEFFICIENTS_1, COEFFICIENTS_2, COEFFICIENTS_3, COEFFICIENTS_4
+		--COEFFICIENTS_5, COEFFICIENTS_6, COEFFICIENTS_7, COEFFICIENTS_8
 	);
 	
 	

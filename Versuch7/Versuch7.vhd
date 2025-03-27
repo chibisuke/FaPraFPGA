@@ -14,18 +14,21 @@ entity Versuch7 is
 		aud_i2c_sclk: out std_logic;
 		aud_i2c_sdat: inout std_logic;
 		aud_m_clk: out std_logic;
-		aud_b_clk: out std_logic;
-		aud_dac_lr_clk: out std_logic;
-		aud_adc_lr_clk: out std_logic;
+		b_clk: in std_logic;
+		aud_dac_lr_clk: in std_logic;
+		aud_adc_lr_clk: in std_logic;
 		aud_dacdat: out std_logic;
 		aud_adcdat: in std_logic;
 		
 		sw: in std_logic_vector(3 downto 0);
-		key: in std_logic_vector(0 downto 0)
+		key: in std_logic_vector(0 downto 0);
 		
-		--out1: out std_logic; -- H12 IO_B1
-		--out2: out std_logic -- H13 IO_B2
-		
+		out1: out std_logic; -- H12 IO_B1
+		out2: out std_logic; -- H13 IO_B2
+		out3: out std_logic; -- H14 IO_B1
+		out4: out std_logic -- G15 IO_B2
+		--out5: out std_logic; -- H12 IO_B1
+		--out6: out std_logic -- H13 IO_B2
 	);
 end Versuch7;
 
@@ -45,10 +48,16 @@ architecture arch of Versuch7 is
 	signal rd_data: std_logic_vector(31 downto 0);
 	
 	signal trigger_key: std_logic;
+	
+	signal tmp, dac_idle: std_logic;
+	signal tmp_aud_dacdat: std_logic;
 begin
-	--out1 <= aud_i2c_sclk_int;
-	--aud_i2c_sclk <= aud_i2c_sclk_int;
-	--out2 <= aud_i2c_sdat;
+	out1 <= audio_data_out(31);
+	out2 <= b_clk;
+	out3 <= tmp;
+	out4 <= aud_dac_lr_clk;
+	aud_dacdat <= tmp_aud_dacdat;
+	
 
 	i2c: entity work.i2c(arch) port map(
 		clk=>clk, 
@@ -60,52 +69,70 @@ begin
 		i2c_fail=>open, 
 		i2c_done_tick=>open,
 		wr_i2c=>i2c_wr
+		
 	);
 	
 	audio_config: entity work.audio_config(arch) port map(clk=>clk, i2c_data=>i2c_data, i2c_wr=>i2c_wr, i2c_idle=>i2c_idle);
 	
-	adc_dac: entity work.adc_dac(arch) port map(
+--	adc_dac: entity work.adc_dac(arch) port map(
+--		clk=>clk,
+--		reset=>'0',
+--		dac_data_in=>audio_data_in,
+--		adc_data_out=>audio_data_out,
+--		m_clk=>aud_m_clk,
+--		b_clk=>aud_b_clk,
+--		dac_lr_clk=>aud_dac_lr_clk,
+--		adc_lr_clk=>aud_adc_lr_clk,
+--		dacdat=>aud_dacdat,
+--		adcdat=>aud_adcdat,
+--		load_done_tick=>load_done_tick
+--	);	
+
+	adcdac: entity work.adcdac(dsp_A) port map(
 		clk=>clk,
-		reset=>'0',
 		dac_data_in=>audio_data_in,
 		adc_data_out=>audio_data_out,
 		m_clk=>aud_m_clk,
-		b_clk=>aud_b_clk,
+		b_clk=>b_clk,
 		dac_lr_clk=>aud_dac_lr_clk,
 		adc_lr_clk=>aud_adc_lr_clk,
-		dacdat=>aud_dacdat,
+		dacdat=>tmp_aud_dacdat,
 		adcdat=>aud_adcdat,
-		load_done_tick=>load_done_tick
-	);	
-	
+		adc_ready=>load_done_tick,
+		dac_idle=>dac_idle
+	);
+		
+		
+		
+		
 	-- audio_data_in <= audio_data_out(30 downto 16) & '0' & audio_data_out(14 downto 0) & '0';
 	
-	audio_data_in <= FIRout when sw(3) = '0' else audio_data_out;
+	audio_data_in <= audio_data_out; --FIRout when sw(3) = '0' else audio_data_out;
 	
 	
-	memory: entity work.memory port map(
-		clock=>clk, 
-		data=>audio_data_out, 
-		wren=>load_done_tick, 
-		wraddress=>mem_wraddr,
-		rdaddress=>mem_rdaddr,
-		q=>rd_data
-	);
-	
-	mem_wr_addr: entity work.mem_wr_addr port map(clk=>clk, wr_addr=>mem_wraddr, incr=>load_done_tick);
-	
-	FIRController: entity work.FIR_Controller port map(
-		clk=>clk, 
-		rd_addr=>mem_rdaddr,
-		rd_data=>rd_data,
-		start_addr=>mem_wraddr,
-		output=>FIRout,
-		start=>load_done_tick,
-		filter_select=>sw(2 downto 0),
-		change_filter=>trigger_key
-	);
-	
-	key_trigger: entity work.edge_detect port map(clk=>clk, input=>key(0), edge=>trigger_key);
+--	memory: entity work.memory port map(
+--		clock=>clk, 
+--		data=>audio_data_out, 
+--		wren=>load_done_tick, 
+--		wraddress=>mem_wraddr,
+--		rdaddress=>mem_rdaddr,
+--		q=>rd_data
+--	);
+--	
+--	mem_wr_addr: entity work.mem_wr_addr port map(clk=>clk, wr_addr=>mem_wraddr, incr=>load_done_tick);
+--	
+--	FIRController: entity work.FIR_Controller port map(
+--		clk=>clk, 
+--		rd_addr=>mem_rdaddr,
+--		rd_data=>rd_data,
+--		start_addr=>mem_wraddr,
+--		output=>FIRout,
+--		start=>load_done_tick,
+--		filter_select=>sw(2 downto 0),
+--		change_filter=>trigger_key
+--	);
+--	
+--	key_trigger: entity work.edge_detect port map(clk=>clk, input=>key(0), edge=>trigger_key);
 	
 --			clk: in std_logic;
 --		rd_addr: out std_logic_vector(7 downto 0);

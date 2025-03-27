@@ -22,7 +22,7 @@ architecture arch of audio_config is
 		"000010010", -- Audio Path control (MICBOOST = 0, MUTEMIC = 1, INSEL=0(LineIn), BYPASS = 0, DACSEL = 1, SIDETONE = 0, SIDEATT = -6dB)
 		"000000000", -- Digital Audio Control  (ADC-HighPass = 0, DEEMPhasesControl = disabled, DAC Soft Mute = 0, HPOR = 0)
 		"001100010", -- Power Down Control ( LineInPD = 0, MicPd = 1, AdcPd = 0, DacPd = 0, OutPd = 0, OscPd = 1, ClkOutPd = 1, Poweroff = 0)
-		"000000001", -- Digital Audio Interface Format  (FORMAT = Left Justified, InputDataBitLength = 16 bit, LRP DACLRC=IGN, 
+		"001010011", -- Digital Audio Interface Format  (FORMAT = Left Justified, InputDataBitLength = 16 bit, LRP DACLRC=IGN, 
 						 -- LRSWAP = 0, Master/Slave = Slave, BCLK-Invert = 0
 		"000000000", -- Sampling Control (Mode = Normal(256/384fs), Oversampling = 256fs, SR = 0000 (48kHz), ClkDiv = 0)
 		"000000001", -- Active Control (Inactive)
